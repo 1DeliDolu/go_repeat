@@ -1,0 +1,17 @@
+package pages
+
+import (
+	"pehlione.com/app/pkg/view"
+	"pehlione.com/app/templates/layout"
+)
+
+templ Error(status int, message string, requestID string, flash *view.Flash) {
+  @layout.Base("Hata", flash, ErrorBody(status, message, requestID))
+}
+
+templ ErrorBody(status int, message string, requestID string) {
+  <h1 class="text-2xl font-semibold">Hata { status }</h1>
+  <p class="mt-2">{ message }</p>
+  <hr class="my-4"/>
+  <p class="text-sm text-gray-600">request_id: { requestID }</p>
+}

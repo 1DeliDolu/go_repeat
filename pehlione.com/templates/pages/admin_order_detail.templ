@@ -1,0 +1,162 @@
+package pages
+
+import (
+	"pehlione.com/app/pkg/view"
+	"pehlione.com/app/templates/layout"
+)
+
+templ AdminOrderDetail(flash *view.Flash, csrf string, o view.AdminOrderDetail) {
+	@layout.Base("Admin Order", flash, AdminOrderDetailBody(csrf, o))
+}
+
+templ AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) {
+	<div class="mb-3">
+		<a class="underline" href="/admin/orders">← Back</a>
+	</div>
+
+	<h1 class="text-2xl font-semibold mb-2">Order</h1>
+	<div class="border rounded p-3 mb-4">
+		<div><strong>ID:</strong> { o.ID }</div>
+		<div><strong>Status:</strong> { o.Status }</div>
+		<div><strong>UserID:</strong> { o.UserID }</div>
+		<div><strong>GuestEmail:</strong> { o.GuestEmail }</div>
+		<div><strong>Created:</strong> { o.CreatedAt }</div>
+	</div>
+
+	<h2 class="text-xl font-semibold mb-2">Actions</h2>
+	<div class="border rounded p-3 mb-4 space-y-3">
+		@actionForm(csrf, o.ID, "ship", "Ship (paid → shipped)", false)
+		@actionForm(csrf, o.ID, "deliver", "Deliver (shipped → delivered)", false)
+		@actionForm(csrf, o.ID, "cancel", "Cancel (created → cancelled)", false)
+		@refundForm(csrf, o.ID)
+
+		<div class="text-sm">
+			Not: Geçersiz geçişlerde sistem hata verir. Bu butonlar her zaman görünür; state machine server-side enforced.
+		</div>
+	</div>
+
+	<h2 class="text-xl font-semibold mb-2">Items</h2>
+	<table class="w-full border-collapse mb-4">
+		<thead>
+			<tr class="border-b">
+				<th class="text-left p-2">Product</th>
+				<th class="text-left p-2">SKU</th>
+				<th class="text-left p-2">Qty</th>
+				<th class="text-left p-2">Unit</th>
+				<th class="text-left p-2">Line</th>
+			</tr>
+		</thead>
+		<tbody>
+			for _, it := range o.Items {
+				<tr class="border-b align-top">
+					<td class="p-2">
+						{ it.ProductName }
+						if it.Options != "" {
+							<div class="text-sm mt-1"><code>{ it.Options }</code></div>
+						}
+					</td>
+					<td class="p-2">{ it.SKU }</td>
+					<td class="p-2">{ it.Qty }</td>
+					<td class="p-2">{ it.Unit }</td>
+					<td class="p-2">{ it.Line }</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+
+	<div class="border rounded p-3 mb-6">
+		<div><strong>Subtotal:</strong> { o.Subtotal }</div>
+		<div><strong>Shipping:</strong> { o.Shipping }</div>
+		<div><strong>Tax:</strong> { o.Tax }</div>
+		<div><strong>Discount:</strong> { o.Discount }</div>
+		<div class="mt-2"><strong>Total:</strong> { o.Total }</div>
+	</div>
+
+	<h2 class="text-xl font-semibold mb-2">Audit</h2>
+	if len(o.Events) == 0 {
+		<div>No events.</div>
+	} else {
+		<table class="w-full border-collapse mb-6">
+			<thead>
+				<tr class="border-b">
+					<th class="text-left p-2">At</th>
+					<th class="text-left p-2">Action</th>
+					<th class="text-left p-2">From</th>
+					<th class="text-left p-2">To</th>
+					<th class="text-left p-2">Actor</th>
+					<th class="text-left p-2">Note</th>
+				</tr>
+			</thead>
+			<tbody>
+				for _, e := range o.Events {
+					<tr class="border-b">
+						<td class="p-2">{ e.At }</td>
+						<td class="p-2">{ e.Action }</td>
+						<td class="p-2">{ e.From }</td>
+						<td class="p-2">{ e.To }</td>
+						<td class="p-2">{ e.ActorUserID }</td>
+						<td class="p-2">{ e.Note }</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	}
+
+	<h2 class="text-xl font-semibold mb-2">Financial Ledger</h2>
+	if len(o.Financial) == 0 {
+		<div>No entries.</div>
+	} else {
+		<table class="w-full border-collapse">
+			<thead>
+				<tr class="border-b">
+					<th class="text-left p-2">At</th>
+					<th class="text-left p-2">Event</th>
+					<th class="text-left p-2">Amount</th>
+					<th class="text-left p-2">Ref Type</th>
+					<th class="text-left p-2">Ref ID</th>
+				</tr>
+			</thead>
+			<tbody>
+				for _, f := range o.Financial {
+					<tr class="border-b">
+						<td class="p-2">{ f.At }</td>
+						<td class="p-2">{ f.Event }</td>
+						<td class="p-2">{ f.AmountStr }</td>
+						<td class="p-2">{ f.RefType }</td>
+						<td class="p-2 text-sm">{ f.RefID }</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	}
+}
+
+templ actionForm(csrf string, orderID string, action string, label string, isRefund bool) {
+	<form method="post" action={ "/admin/orders/" + orderID + "/" + action } class="border rounded p-3">
+		<input type="hidden" name="csrf_token" value={ csrf } />
+		<div class="font-semibold mb-2">{ label }</div>
+		<textarea class="w-full border p-2 rounded mb-2" name="note" rows="2" placeholder="Note (optional)"></textarea>
+		<label class="text-sm block mb-2">
+			<input type="checkbox" name="confirm" value="1" />
+			Onaylıyorum
+		</label>
+		<button class="px-4 py-2 border rounded" type="submit">Execute</button>
+	</form>
+}
+
+templ refundForm(csrf string, orderID string) {
+	<form method="post" action={ "/admin/orders/" + orderID + "/refund" } class="border rounded p-3">
+		<input type="hidden" name="csrf_token" value={ csrf } />
+		<div class="font-semibold mb-2">Refund (paid → refunded/partially_refunded)</div>
+		<div class="mb-2">
+			<label class="text-sm block mb-1">Amount (cents, blank = full)</label>
+			<input class="w-full border p-2 rounded" type="number" name="amount_cents" min="0" placeholder="Leave blank for full refund" />
+		</div>
+		<textarea class="w-full border p-2 rounded mb-2" name="note" rows="2" placeholder="Reason (optional)"></textarea>
+		<label class="text-sm block mb-2">
+			<input type="checkbox" name="confirm" value="1" />
+			Onaylıyorum
+		</label>
+		<button class="px-4 py-2 border rounded" type="submit">Execute</button>
+	</form>
+}

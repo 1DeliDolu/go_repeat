@@ -1,0 +1,250 @@
+package layout
+
+import (
+	"strconv"
+
+	"pehlione.com/app/pkg/view"
+)
+
+templ Header() {
+	<header class="bg-gray-900">
+		<nav aria-label="Global" class="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
+			<div class="flex lg:flex-1">
+				<a href="/" class="-m-1.5 p-1.5">
+					<span class="sr-only">Pehlione</span>
+					<img src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500" alt="" class="h-8 w-auto" />
+				</a>
+			</div>
+
+			<div class="flex lg:hidden">
+				<button type="button" command="show-modal" commandfor="mobile-menu" class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-400">
+					<span class="sr-only">Open main menu</span>
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6">
+						<path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round" stroke-linejoin="round" />
+					</svg>
+				</button>
+			</div>
+
+			<el-popover-group class="hidden lg:flex lg:gap-x-12">
+				<div class="relative">
+					<button popovertarget="desktop-menu-product" class="flex items-center gap-x-1 text-sm/6 font-semibold text-white">
+						Product
+						<svg viewBox="0 0 20 20" fill="currentColor" data-slot="icon" aria-hidden="true" class="size-5 flex-none text-gray-500">
+							<path d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" fill-rule="evenodd" />
+						</svg>
+					</button>
+
+					<el-popover id="desktop-menu-product" anchor="bottom" popover class="w-screen max-w-md overflow-hidden rounded-3xl bg-gray-800 outline-1 -outline-offset-1 outline-white/10 transition transition-discrete [--anchor-gap:--spacing(3)] backdrop:bg-transparent open:block data-closed:translate-y-1 data-closed:opacity-0 data-enter:duration-200 data-enter:ease-out data-leave:duration-150 data-leave:ease-in">
+						<div class="p-4">
+							<div class="group relative flex items-center gap-x-6 rounded-lg p-4 text-sm/6 hover:bg-white/5">
+								<div class="flex size-11 flex-none items-center justify-center rounded-lg bg-gray-700/50 group-hover:bg-gray-700">
+									<span class="text-gray-300">🛒</span>
+								</div>
+								<div class="flex-auto">
+									<a href="/products" class="block font-semibold text-white">
+										Katalog
+										<span class="absolute inset-0"></span>
+									</a>
+									<p class="mt-1 text-gray-400">Tüm ürünleri keşfet</p>
+								</div>
+							</div>
+
+							<div class="group relative flex items-center gap-x-6 rounded-lg p-4 text-sm/6 hover:bg-white/5">
+								<div class="flex size-11 flex-none items-center justify-center rounded-lg bg-gray-700/50 group-hover:bg-gray-700">
+									<span class="text-gray-300">⭐</span>
+								</div>
+								<div class="flex-auto">
+									<a href="/products?sort=popular" class="block font-semibold text-white">
+										Popüler
+										<span class="absolute inset-0"></span>
+									</a>
+									<p class="mt-1 text-gray-400">En çok satanlar</p>
+								</div>
+							</div>
+
+							<div class="group relative flex items-center gap-x-6 rounded-lg p-4 text-sm/6 hover:bg-white/5">
+								<div class="flex size-11 flex-none items-center justify-center rounded-lg bg-gray-700/50 group-hover:bg-gray-700">
+									<span class="text-gray-300">🏷️</span>
+								</div>
+								<div class="flex-auto">
+									<a href="/products?filter=sale" class="block font-semibold text-white">
+										İndirim
+										<span class="absolute inset-0"></span>
+									</a>
+									<p class="mt-1 text-gray-400">Kampanyalı ürünler</p>
+								</div>
+							</div>
+
+							if h := view.HeaderCtxFrom(ctx); h.IsAuthed {
+								<div class="group relative flex items-center gap-x-6 rounded-lg p-4 text-sm/6 hover:bg-white/5">
+									<div class="flex size-11 flex-none items-center justify-center rounded-lg bg-gray-700/50 group-hover:bg-gray-700">
+										<span class="text-gray-300">📦</span>
+									</div>
+									<div class="flex-auto">
+										<a href="/account/orders" class="block font-semibold text-white">
+											Siparişlerim
+											<span class="absolute inset-0"></span>
+										</a>
+										<p class="mt-1 text-gray-400">Geçmiş siparişleri görüntüle</p>
+									</div>
+								</div>
+							}
+
+							if h := view.HeaderCtxFrom(ctx); h.IsAdmin {
+								<div class="group relative flex items-center gap-x-6 rounded-lg p-4 text-sm/6 hover:bg-white/5">
+									<div class="flex size-11 flex-none items-center justify-center rounded-lg bg-gray-700/50 group-hover:bg-gray-700">
+										<span class="text-gray-300">🛡️</span>
+									</div>
+									<div class="flex-auto">
+										<a href="/admin/orders" class="block font-semibold text-white">
+											Admin Orders
+											<span class="absolute inset-0"></span>
+										</a>
+										<p class="mt-1 text-gray-400">Sipariş yönetimi</p>
+									</div>
+								</div>
+							}
+						</div>
+
+						<div class="grid grid-cols-2 divide-x divide-white/10 bg-gray-700/50">
+							if h := view.HeaderCtxFrom(ctx); true {
+								<a href="/cart" class="flex items-center justify-center gap-x-2.5 p-3 text-sm/6 font-semibold text-white hover:bg-gray-700/50">
+									Sepete git
+									if h.CartQty > 0 {
+									<span id="cart-badge" class="ml-2 inline-flex items-center justify-center rounded-full bg-indigo-600 px-2 py-0.5 text-xs font-semibold text-white">
+											{ strconv.Itoa(h.CartQty) }
+										</span>
+									}
+								</a>
+							}
+
+							if h := view.HeaderCtxFrom(ctx); h.IsAuthed {
+								<a href="/account/orders" class="flex items-center justify-center gap-x-2.5 p-3 text-sm/6 font-semibold text-white hover:bg-gray-700/50">
+									Siparişlerim
+								</a>
+							} else {
+								<a href="/login" class="flex items-center justify-center gap-x-2.5 p-3 text-sm/6 font-semibold text-white hover:bg-gray-700/50">
+									Log in
+								</a>
+							}
+						</div>
+					</el-popover>
+				</div>
+
+				<a href="/products" class="text-sm/6 font-semibold text-white">Features</a>
+				<a href="/admin/orders" class="text-sm/6 font-semibold text-white">Admin</a>
+				<a href="/company" class="text-sm/6 font-semibold text-white">Company</a>
+			</el-popover-group>
+
+			<div class="hidden lg:flex lg:flex-1 lg:justify-end">
+				@HeaderDesktopRight()
+			</div>
+		</nav>
+
+		<el-dialog>
+			<dialog id="mobile-menu" class="backdrop:bg-transparent lg:hidden">
+				<div tabindex="0" class="fixed inset-0 focus:outline-none">
+					<el-dialog-panel class="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-gray-900 p-6 sm:max-w-sm sm:ring-1 sm:ring-gray-100/10">
+						<div class="flex items-center justify-between">
+							<a href="/" class="-m-1.5 p-1.5">
+								<span class="sr-only">Pehlione</span>
+								<img src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500" alt="" class="h-8 w-auto" />
+							</a>
+							<button type="button" command="close" commandfor="mobile-menu" class="-m-2.5 rounded-md p-2.5 text-gray-400">
+								<span class="sr-only">Close menu</span>
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6">
+									<path d="M6 18 18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
+								</svg>
+							</button>
+						</div>
+
+						<div class="mt-6 flow-root">
+							<div class="-my-6 divide-y divide-white/10">
+								<div class="space-y-2 py-6">
+									<div class="-mx-3">
+										<button type="button" command="--toggle" commandfor="products" class="flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-white hover:bg-white/5">
+											Product
+											<svg viewBox="0 0 20 20" fill="currentColor" data-slot="icon" aria-hidden="true" class="size-5 flex-none in-aria-expanded:rotate-180">
+												<path d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" fill-rule="evenodd" />
+											</svg>
+										</button>
+
+										<el-disclosure id="products" hidden class="mt-2 block space-y-2">
+											if h := view.HeaderCtxFrom(ctx); true {
+												<a href="/products" class="block rounded-lg py-2 pr-3 pl-6 text-sm/7 font-semibold text-white hover:bg-white/5">Katalog</a>
+												<a href="/cart" class="flex items-center justify-between rounded-lg py-2 pr-3 pl-6 text-sm/7 font-semibold text-white hover:bg-white/5">
+													<span>Sepet</span>
+													if h.CartQty > 0 {
+													<span id="cart-badge-mobile" class="inline-flex items-center justify-center rounded-full bg-indigo-600 px-2 py-0.5 text-xs font-semibold text-white">
+															{ strconv.Itoa(h.CartQty) }
+														</span>
+													}
+												</a>
+											}
+
+											if h := view.HeaderCtxFrom(ctx); h.IsAuthed {
+												<a href="/account/orders" class="block rounded-lg py-2 pr-3 pl-6 text-sm/7 font-semibold text-white hover:bg-white/5">Siparişlerim</a>
+											}
+
+											if h := view.HeaderCtxFrom(ctx); h.IsAdmin {
+												<a href="/admin/orders" class="block rounded-lg py-2 pr-3 pl-6 text-sm/7 font-semibold text-white hover:bg-white/5">Admin Orders</a>
+											}
+										</el-disclosure>
+									</div>
+
+									<a href="/products" class="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-white hover:bg-white/5">Features</a>
+									<a href="/admin/orders" class="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-white hover:bg-white/5">Admin</a>
+									<a href="/company" class="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-white hover:bg-white/5">Company</a>
+								</div>
+
+							<div class="py-6">
+								@HeaderMobileFooter()
+							</div>
+							</div>
+						</div>
+					</el-dialog-panel>
+				</div>
+			</dialog>
+		</el-dialog>
+	</header>
+}
+
+// HeaderDesktopRight renders desktop-only auth state (login vs account/logout).
+templ HeaderDesktopRight() {
+	if h := view.HeaderCtxFrom(ctx); !h.IsAuthed {
+		<a href="/login" class="text-sm/6 font-semibold text-white">Log in <span aria-hidden="true">&rarr;</span></a>
+	} else {
+		<div class="flex items-center gap-4">
+			<a href="/account/orders" class="text-sm/6 font-semibold text-white">Account</a>
+
+			if h.IsAdmin {
+				<a href="/admin/orders" class="text-sm/6 font-semibold text-white">Admin</a>
+			}
+
+			<form method="post" action="/logout">
+				<input type="hidden" name="csrf_token" value={ h.CSRFToken }/>
+				<button type="submit" class="text-sm/6 font-semibold text-white hover:text-gray-300">Logout</button>
+			</form>
+		</div>
+	}
+}
+
+// HeaderMobileFooter renders mobile-only auth state (login vs account/logout).
+templ HeaderMobileFooter() {
+	if h := view.HeaderCtxFrom(ctx); !h.IsAuthed {
+		<a href="/login" class="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-white hover:bg-white/5">Log in</a>
+	} else {
+		<a href="/account/orders" class="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-white hover:bg-white/5">Account</a>
+
+		if h.IsAdmin {
+			<a href="/admin/orders" class="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-white hover:bg-white/5">Admin</a>
+		}
+
+		<form method="post" action="/logout" class="-mx-3 mt-2">
+			<input type="hidden" name="csrf_token" value={ h.CSRFToken }/>
+			<button type="submit" class="w-full text-left rounded-lg px-3 py-2.5 text-base/7 font-semibold text-white hover:bg-white/5">
+				Logout
+			</button>
+		</form>
+	}
+}

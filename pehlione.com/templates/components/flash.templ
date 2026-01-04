@@ -1,0 +1,14 @@
+package components
+
+import "pehlione.com/app/pkg/view"
+
+templ FlashBanner(f *view.Flash) {
+	if f == nil {
+		// nothing
+	} else {
+		<div class="mb-4 p-3 border rounded">
+			<strong class="mr-2">{ string(f.Kind) }</strong>
+			<span>{ f.Message }</span>
+		</div>
+	}
+}

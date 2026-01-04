@@ -1,0 +1,29 @@
+package pages
+
+import (
+  "pehlione.com/app/pkg/view"
+  "pehlione.com/app/templates/layout"
+)
+
+templ AdminDashboard(flash *view.Flash, csrf string, email string) {
+  @layout.Base("Admin", flash, AdminDashboardBody(csrf, email))
+}
+
+templ AdminDashboardBody(csrf string, email string) {
+  <h1 class="text-2xl font-semibold">Admin Panel</h1>
+
+  <div class="mt-3 p-3 border rounded">
+    <div><strong>Admin:</strong> { email }</div>
+  </div>
+
+  <div class="mt-4 space-y-2">
+    <div><a class="underline" href="/admin/products">Ürünler</a></div>
+    <div><a class="underline" href="/admin/orders">Siparişler</a></div>
+    <div><a class="underline" href="/admin/coupons">Kuponlar</a></div>
+  </div>
+
+  <form method="post" action="/logout" class="mt-6">
+    <input type="hidden" name="csrf_token" value={ csrf }/>
+    <button class="px-4 py-2 border rounded" type="submit">Çıkış Yap</button>
+  </form>
+}

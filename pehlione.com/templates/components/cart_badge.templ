@@ -1,0 +1,15 @@
+package components
+
+import (
+	"strconv"
+
+	"pehlione.com/app/pkg/view"
+)
+
+templ CartBadge(h view.HeaderCtx) {
+	if h.CartQty > 0 {
+		<span id="cart-badge" class="ml-2 inline-flex items-center justify-center rounded-full bg-indigo-600 px-2 py-0.5 text-xs font-semibold text-white">
+			{ strconv.Itoa(h.CartQty) }
+		</span>
+	}
+}

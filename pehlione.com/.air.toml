@@ -1,0 +1,29 @@
+root = "."
+testdata_dir = "testdata"
+tmp_dir = "tmp"
+
+[build]
+  cmd = "cmd.exe /c .\\scripts\\dev_build.bat"
+  bin = "tmp/pehlione-web.exe"
+  entrypoint = "tmp/pehlione-web.exe"
+  
+  # Watch these file types for changes
+  include_ext = ["go", "templ", "css"]
+  
+  # Don't watch these directories (prevent rebuild loops)
+  # - tmp: build output
+  # - bin: compiled binaries
+  # - node_modules: npm deps
+  # - static: generated CSS (changes here shouldn't trigger rebuild)
+  exclude_dir = ["tmp", "bin", "node_modules", "static", "vendor", ".git"]
+  
+  # Exclude templ generated files to prevent infinite loops
+  exclude_regex = ["_templ\\.go$"]
+  
+  # Delay before rebuild (ms) - gives time for multiple file changes
+  delay = 300
+  
+  # Settings for reliability
+  stop_on_error = true
+  send_interrupt = true
+  kill_delay = 500

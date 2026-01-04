@@ -1,0 +1,86 @@
+package pages
+
+import (
+	"net/url"
+	"strconv"
+
+	"pehlione.com/app/pkg/view"
+	"pehlione.com/app/templates/layout"
+)
+
+templ AdminOrdersList(flash *view.Flash, p view.AdminOrdersListPage) {
+	@layout.Base("Admin Orders", flash, AdminOrdersListBody(p))
+}
+
+templ AdminOrdersListBody(p view.AdminOrdersListPage) {
+	<h1 class="text-2xl font-semibold mb-4">Orders</h1>
+
+	<form method="get" action="/admin/orders" class="mb-4 space-y-2">
+		<div class="grid grid-cols-3 gap-2">
+			<input class="border p-2 rounded" name="q" value={ p.Q } placeholder="Order ID / guest email" />
+			<select class="border p-2 rounded" name="status">
+				<option value="" selected={ p.Status == "" }>all</option>
+				<option value="created" selected={ p.Status == "created" }>created</option>
+				<option value="paid" selected={ p.Status == "paid" }>paid</option>
+				<option value="shipped" selected={ p.Status == "shipped" }>shipped</option>
+				<option value="delivered" selected={ p.Status == "delivered" }>delivered</option>
+				<option value="cancelled" selected={ p.Status == "cancelled" }>cancelled</option>
+				<option value="refunded" selected={ p.Status == "refunded" }>refunded</option>
+			</select>
+			<button class="px-4 py-2 border rounded" type="submit">Filter</button>
+		</div>
+	</form>
+
+	<table class="w-full border-collapse">
+		<thead>
+			<tr class="border-b">
+				<th class="text-left p-2">Created</th>
+				<th class="text-left p-2">Order</th>
+				<th class="text-left p-2">Status</th>
+				<th class="text-left p-2">Total</th>
+				<th class="text-left p-2">User</th>
+				<th class="text-left p-2">Guest</th>
+			</tr>
+		</thead>
+		<tbody>
+			for _, it := range p.Items {
+				<tr class="border-b">
+					<td class="p-2">{ it.CreatedAt }</td>
+					<td class="p-2"><a class="underline" href={ templ.SafeURL("/admin/orders/" + it.ID) }>{ it.ID }</a></td>
+					<td class="p-2">{ it.Status }</td>
+					<td class="p-2">{ it.Total }</td>
+					<td class="p-2">{ it.UserID }</td>
+					<td class="p-2">{ it.GuestEmail }</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+
+	<div class="mt-6 flex gap-3 items-center">
+		if p.Page > 1 {
+			<a class="underline" href={ pageURL(p.Q, p.Status, p.Page-1) }>Prev</a>
+		}
+		<span>Page { strconv.Itoa(p.Page) } / { strconv.Itoa(p.TotalPages) }</span>
+		if p.Page < p.TotalPages {
+			<a class="underline" href={ pageURL(p.Q, p.Status, p.Page+1) }>Next</a>
+		}
+	</div>
+}
+
+func pageURL(q string, status string, page int) templ.SafeURL {
+	v := url.Values{}
+	if q != "" {
+		v.Set("q", q)
+	}
+	if status != "" {
+		v.Set("status", status)
+	}
+	if page > 1 {
+		v.Set("page", strconv.Itoa(page))
+	}
+	qs := v.Encode()
+	if qs == "" {
+		return templ.SafeURL("/admin/orders")
+	}
+	return templ.SafeURL("/admin/orders?" + qs)
+}

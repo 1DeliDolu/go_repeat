@@ -1,0 +1,45 @@
+package pages
+
+import (
+  "pehlione.com/app/pkg/view"
+  "pehlione.com/app/templates/layout"
+)
+
+templ AdminProductsList(flash *view.Flash, csrf string, items []view.AdminProductListItem) {
+  @layout.Base("Admin Products", flash, AdminProductsListBody(csrf, items))
+}
+
+templ AdminProductsListBody(csrf string, items []view.AdminProductListItem) {
+  <h1 class="text-2xl font-semibold mb-4">Ürünler</h1>
+
+  <div class="mb-4">
+    <a class="underline" href="/admin/products/new">Yeni Ürün</a>
+  </div>
+
+  <table class="w-full border-collapse">
+    <thead>
+      <tr class="border-b">
+        <th class="text-left p-2">Name</th>
+        <th class="text-left p-2">Slug</th>
+        <th class="text-left p-2">Status</th>
+        <th class="text-left p-2">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      for _, p := range items {
+        <tr class="border-b">
+          <td class="p-2">{ p.Name }</td>
+          <td class="p-2">{ p.Slug }</td>
+          <td class="p-2">{ p.Status }</td>
+          <td class="p-2">
+            <a class="underline mr-3" href={ "/admin/products/" + p.ID + "/edit" }>Edit</a>
+            <form method="post" action={ "/admin/products/" + p.ID + "/delete" } style="display:inline">
+              <input type="hidden" name="csrf_token" value={ csrf }/>
+              <button class="underline" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

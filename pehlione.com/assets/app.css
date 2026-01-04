@@ -1,0 +1,4 @@
+@import "tailwindcss";
+
+/* templ dosyalarınızı kesin tarasın diye (Tailwind v4 content detection için) */
+@source "../templates/**/*.templ";

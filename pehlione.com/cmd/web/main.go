@@ -1,23 +1,37 @@
 package main
 
 import (
-	"net/http"
+	"log"
+	"os"
 
-	"github.com/gin-gonic/gin"
+	"log/slog"
+
+	"github.com/joho/godotenv"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+
+	apphttp "pehlione.com/app/internal/http"
 )
 
 func main() {
-	r := gin.New()
-	r.Use(gin.Recovery())
+	// Load .env file (ignore error if not found - prod uses real env vars)
+	_ = godotenv.Load()
 
-	r.GET("/", func(c *gin.Context) {
-		c.String(http.StatusOK, "pehlione.com up")
-	})
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	}))
 
-	r.GET("/healthz", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"ok": true})
-	})
+	// Database connection
+	dsn := os.Getenv("DB_DSN")
+	if dsn == "" {
+		log.Fatal("DB_DSN environment variable is required")
+	}
 
-	// Sadece 8080
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+	}
+
+	r := apphttp.NewRouter(logger, db)
 	_ = r.Run(":8080")
 }

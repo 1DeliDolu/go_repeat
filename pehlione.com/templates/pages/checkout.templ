@@ -1,0 +1,137 @@
+package pages
+
+import (
+	"pehlione.com/app/internal/http/validation"
+	"pehlione.com/app/pkg/view"
+	"pehlione.com/app/templates/layout"
+)
+
+templ Checkout(
+	flash *view.Flash,
+	csrf string,
+	form view.CheckoutForm,
+	errs validation.FieldErrors,
+	pageErr string,
+	opts []view.ShippingOption,
+	summary view.CheckoutSummary,
+	isAuthed bool,
+) {
+	@layout.Base("Checkout", flash, CheckoutBody(csrf, form, errs, pageErr, opts, summary, isAuthed))
+}
+
+templ CheckoutBody(
+	csrf string,
+	form view.CheckoutForm,
+	errs validation.FieldErrors,
+	pageErr string,
+	opts []view.ShippingOption,
+	summary view.CheckoutSummary,
+	isAuthed bool,
+) {
+	<h1 class="text-2xl font-semibold mb-4">Checkout</h1>
+
+	<div class="border rounded p-3 mb-4">
+		<div><strong>Ürün adedi:</strong> { itoa(summary.Items) }</div>
+		<div><strong>Ara toplam:</strong> { summary.Subtotal }</div>
+		<div><strong>Kargo:</strong> { summary.Shipping }</div>
+		<div class="mt-2"><strong>Toplam:</strong> { summary.Total }</div>
+	</div>
+
+	if pageErr != "" {
+		<div class="mb-4 p-3 border rounded">{ pageErr }</div>
+	}
+
+	<form method="post" action="/checkout" class="space-y-3">
+		<input type="hidden" name="csrf_token" value={ csrf }/>
+		<input type="hidden" name="idempotency_key" value={ form.IdemKey }/>
+
+		if !isAuthed {
+			<div>
+				<label class="block text-sm mb-1">Email</label>
+				<input class="w-full border p-2 rounded" name="email" value={ form.Email }/>
+				if errs != nil && errs["email"] != "" {
+					<div class="text-sm mt-1">{ errs["email"] }</div>
+				}
+			</div>
+		}
+
+		<div class="grid grid-cols-2 gap-2">
+			<div>
+				<label class="block text-sm mb-1">First name</label>
+				<input class="w-full border p-2 rounded" name="first_name" value={ form.FirstName }/>
+				if errs != nil && errs["first_name"] != "" {
+					<div class="text-sm mt-1">{ errs["first_name"] }</div>
+				}
+			</div>
+			<div>
+				<label class="block text-sm mb-1">Last name</label>
+				<input class="w-full border p-2 rounded" name="last_name" value={ form.LastName }/>
+				if errs != nil && errs["last_name"] != "" {
+					<div class="text-sm mt-1">{ errs["last_name"] }</div>
+				}
+			</div>
+		</div>
+
+		<div>
+			<label class="block text-sm mb-1">Address 1</label>
+			<input class="w-full border p-2 rounded" name="address1" value={ form.Address1 }/>
+			if errs != nil && errs["address1"] != "" {
+				<div class="text-sm mt-1">{ errs["address1"] }</div>
+			}
+		</div>
+
+		<div>
+			<label class="block text-sm mb-1">Address 2</label>
+			<input class="w-full border p-2 rounded" name="address2" value={ form.Address2 }/>
+		</div>
+
+		<div class="grid grid-cols-2 gap-2">
+			<div>
+				<label class="block text-sm mb-1">City</label>
+				<input class="w-full border p-2 rounded" name="city" value={ form.City }/>
+				if errs != nil && errs["city"] != "" {
+					<div class="text-sm mt-1">{ errs["city"] }</div>
+				}
+			</div>
+			<div>
+				<label class="block text-sm mb-1">Postal code</label>
+				<input class="w-full border p-2 rounded" name="postal_code" value={ form.PostalCode }/>
+				if errs != nil && errs["postal_code"] != "" {
+					<div class="text-sm mt-1">{ errs["postal_code"] }</div>
+				}
+			</div>
+		</div>
+
+		<div class="grid grid-cols-2 gap-2">
+			<div>
+				<label class="block text-sm mb-1">Country</label>
+				<input class="w-full border p-2 rounded" name="country" value={ form.Country } placeholder="TR"/>
+				if errs != nil && errs["country"] != "" {
+					<div class="text-sm mt-1">{ errs["country"] }</div>
+				}
+			</div>
+			<div>
+				<label class="block text-sm mb-1">Phone</label>
+				<input class="w-full border p-2 rounded" name="phone" value={ form.Phone }/>
+				if errs != nil && errs["phone"] != "" {
+					<div class="text-sm mt-1">{ errs["phone"] }</div>
+				}
+			</div>
+		</div>
+
+		<div class="border rounded p-3">
+			<div class="font-semibold mb-2">Shipping</div>
+			for _, o := range opts {
+				<label class="block mb-2">
+					<input type="radio" name="shipping_method" value={ o.Code } checked={ form.ShippingMethod == o.Code }/>
+					<span class="ml-2">{ o.Label } — { o.Price }</span>
+				</label>
+			}
+			if errs != nil && errs["shipping_method"] != "" {
+				<div class="text-sm mt-1">{ errs["shipping_method"] }</div>
+			}
+		</div>
+
+		<button class="px-4 py-2 border rounded" type="submit">Siparişi Oluştur</button>
+	</form>
+}

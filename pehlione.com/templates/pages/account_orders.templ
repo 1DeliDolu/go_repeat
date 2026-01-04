@@ -1,0 +1,128 @@
+package pages
+
+import (
+	"fmt"
+	"pehlione.com/app/pkg/view"
+	"pehlione.com/app/templates/layout"
+)
+
+templ AccountOrders(flash *view.Flash, p view.AccountOrdersPage) {
+	@layout.Base("Siparişlerim", flash, AccountOrdersBody(p))
+}
+
+templ AccountOrdersBody(p view.AccountOrdersPage) {
+	<div class="container mx-auto px-4 py-8">
+		<h1 class="text-3xl font-bold mb-8">Siparişlerim</h1>
+
+		<div class="bg-white rounded-lg shadow mb-6 p-4">
+			<form method="get" class="flex gap-4">
+				<div>
+					<label class="block text-sm font-medium mb-2">Durum:</label>
+					<select name="status" class="border rounded px-3 py-2">
+						<option value="">Tümü</option>
+						for _, s := range p.Statuses {
+							if s == p.FilterStatus {
+								<option value={ s } selected>{ s }</option>
+							} else {
+								<option value={ s }>{ s }</option>
+							}
+						}
+					</select>
+				</div>
+				<div class="flex items-end gap-2">
+					<button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+						Filtrele
+					</button>
+					if p.FilterStatus != "" {
+						<a href="/account/orders" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">
+							Temizle
+						</a>
+					}
+				</div>
+			</form>
+		</div>
+
+		if len(p.Items) == 0 {
+			<div class="bg-yellow-50 border border-yellow-200 rounded p-4">
+				<p class="text-yellow-800">Henüz sipariş yok.</p>
+			</div>
+		} else {
+			<div class="bg-white rounded-lg shadow overflow-x-auto">
+				<table class="w-full text-left">
+					<thead>
+						<tr class="bg-gray-100 border-b">
+							<th class="px-4 py-2">Sipariş No</th>
+							<th class="px-4 py-2">Tarih</th>
+							<th class="px-4 py-2">Durum</th>
+							<th class="px-4 py-2">Tutar</th>
+							<th class="px-4 py-2">Öğe</th>
+							<th class="px-4 py-2">Ödeme</th>
+							<th class="px-4 py-2">İşlem</th>
+						</tr>
+					</thead>
+					<tbody>
+						for _, item := range p.Items {
+							<tr class="border-b hover:bg-gray-50">
+								<td class="px-4 py-3">
+									<a href={ templ.SafeURL(fmt.Sprintf("/orders/%s", item.ID)) } class="text-blue-600 hover:underline">
+										{ item.Number }
+									</a>
+								</td>
+								<td class="px-4 py-3">{ item.CreatedAt.Format("02.01.2006") }</td>
+								<td class="px-4 py-3">
+									<span class="px-2 py-1 rounded text-sm font-medium bg-gray-100">
+										{ item.Status }
+									</span>
+								</td>
+								<td class="px-4 py-3">{ fmt.Sprintf("%.2f %s", float64(item.TotalCents)/100, item.Currency) }</td>
+								<td class="px-4 py-3">{ fmt.Sprintf("%d", item.ItemCount) }</td>
+								<td class="px-4 py-3">
+									if item.PaidAt != nil {
+										<span class="text-green-600 font-medium">✓ Ödendi</span>
+									} else if item.Status == "created" {
+										<span class="text-orange-600 font-medium">Beklemede</span>
+									} else {
+										<span class="text-gray-500">-</span>
+									}
+								</td>
+								<td class="px-4 py-3">
+									<a href={ templ.SafeURL(fmt.Sprintf("/orders/%s", item.ID)) } class="text-blue-600 hover:underline text-sm">
+										Detay
+									</a>
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+
+			<div class="mt-6 flex justify-center gap-2">
+				if p.IsPreviousPage {
+					<a href={ templ.SafeURL(fmt.Sprintf("/account/orders?page=%d&status=%s", p.Page-1, p.FilterStatus)) } class="px-3 py-2 border rounded hover:bg-gray-100">
+						Önceki
+					</a>
+				} else {
+					<span class="px-3 py-2 border rounded text-gray-400 cursor-not-allowed">Önceki</span>
+				}
+
+				for page := 1; page <= p.PagesTotal(); page++ {
+					if page == p.Page {
+						<span class="px-3 py-2 border rounded bg-blue-600 text-white">{ fmt.Sprintf("%d", page) }</span>
+					} else {
+						<a href={ templ.SafeURL(fmt.Sprintf("/account/orders?page=%d&status=%s", page, p.FilterStatus)) } class="px-3 py-2 border rounded hover:bg-gray-100">
+							{ fmt.Sprintf("%d", page) }
+						</a>
+					}
+				}
+
+				if p.IsNextPage {
+					<a href={ templ.SafeURL(fmt.Sprintf("/account/orders?page=%d&status=%s", p.Page+1, p.FilterStatus)) } class="px-3 py-2 border rounded hover:bg-gray-100">
+						Sonraki
+					</a>
+				} else {
+					<span class="px-3 py-2 border rounded text-gray-400 cursor-not-allowed">Sonraki</span>
+				}
+			</div>
+		}
+	</div>
+}

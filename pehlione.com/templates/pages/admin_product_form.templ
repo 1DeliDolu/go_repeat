@@ -1,0 +1,186 @@
+package pages
+
+import (
+  "fmt"
+  "pehlione.com/app/internal/http/validation"
+  "pehlione.com/app/pkg/view"
+  "pehlione.com/app/templates/layout"
+)
+
+templ AdminProductForm(flash *view.Flash, csrf string, p view.AdminProduct, errs validation.FieldErrors, pageErr string, isEdit bool) {
+  @layout.Base("Admin Product", flash, AdminProductFormBody(csrf, p, errs, pageErr, isEdit))
+}
+
+templ AdminProductFormBody(csrf string, p view.AdminProduct, errs validation.FieldErrors, pageErr string, isEdit bool) {
+  <h1 class="text-2xl font-semibold mb-4">
+    if isEdit {
+      <span>Edit Product</span>
+    } else {
+      <span>New Product</span>
+    }
+  </h1>
+
+  if pageErr != "" {
+    <div class="mb-4 p-3 border rounded">{ pageErr }</div>
+  }
+
+  <form method="post" action={ formAction(p.ID, isEdit) } class="space-y-3">
+    <input type="hidden" name="csrf_token" value={ csrf }/>
+
+    <div>
+      <label class="block text-sm mb-1">Name</label>
+      <input class="w-full border p-2 rounded" name="name" value={ p.Name }/>
+      if errs != nil && errs["name"] != "" {
+        <div class="text-sm mt-1">{ errs["name"] }</div>
+      }
+    </div>
+
+    <div>
+      <label class="block text-sm mb-1">Slug</label>
+      <input class="w-full border p-2 rounded" name="slug" value={ p.Slug }/>
+      <div class="text-sm mt-1">Boş bırakırsanız name’den üretilecektir.</div>
+      if errs != nil && errs["slug"] != "" {
+        <div class="text-sm mt-1">{ errs["slug"] }</div>
+      }
+    </div>
+
+    <div>
+      <label class="block text-sm mb-1">Status</label>
+      <select class="w-full border p-2 rounded" name="status">
+        <option value="active" selected={ p.Status == "active" }>active</option>
+        <option value="hidden" selected={ p.Status == "hidden" }>hidden</option>
+      </select>
+      if errs != nil && errs["status"] != "" {
+        <div class="text-sm mt-1">{ errs["status"] }</div>
+      }
+    </div>
+
+    <div>
+      <label class="block text-sm mb-1">Description</label>
+      <textarea class="w-full border p-2 rounded" name="description" rows="6">{ p.Description }</textarea>
+      if errs != nil && errs["description"] != "" {
+        <div class="text-sm mt-1">{ errs["description"] }</div>
+      }
+    </div>
+
+    <button class="px-4 py-2 border rounded" type="submit">
+      if isEdit {
+        <span>Save</span>
+      } else {
+        <span>Create</span>
+      }
+    </button>
+  </form>
+
+  if isEdit {
+    <hr class="my-6"/>
+
+    <h2 class="text-xl font-semibold mb-2">Variants</h2>
+
+    <form method="post" action={ "/admin/products/" + p.ID + "/variants" } class="space-y-2 mb-4">
+      <input type="hidden" name="csrf_token" value={ csrf }/>
+      <div class="grid grid-cols-2 gap-2">
+        <input class="border p-2 rounded" name="sku" placeholder="SKU" />
+        <input class="border p-2 rounded" name="currency" placeholder="Currency (EUR)" value="EUR" />
+        <input class="border p-2 rounded" name="price_cents" placeholder="Price cents" />
+        <input class="border p-2 rounded" name="stock" placeholder="Stock" />
+      </div>
+      <textarea class="w-full border p-2 rounded" name="options_json" rows="2" placeholder='{"size":"M","color":"Black"}'></textarea>
+      <button class="px-4 py-2 border rounded" type="submit">Add Variant</button>
+    </form>
+
+    <table class="w-full border-collapse mb-6">
+      <thead>
+        <tr class="border-b">
+          <th class="text-left p-2">SKU / Actions</th>
+          <th class="text-left p-2">Price</th>
+          <th class="text-left p-2">Stock</th>
+          <th class="text-left p-2">Options</th>
+        </tr>
+      </thead>
+      <tbody>
+        for _, v := range p.Variants {
+          <tr class="border-b">
+            <td class="p-2">
+              <form method="post" action={ "/admin/products/" + p.ID + "/variants/" + v.ID } class="space-y-2">
+                <input type="hidden" name="csrf_token" value={ csrf }/>
+                <div class="text-sm">SKU: <strong>{ v.SKU }</strong></div>
+                <div class="grid grid-cols-2 gap-2 mt-2">
+                  <input class="border p-2 rounded" name="price_cents" value={ itoa(v.PriceCents) } />
+                  <input class="border p-2 rounded" name="currency" value={ v.Currency } />
+                  <input class="border p-2 rounded" name="stock" value={ itoa(v.Stock) } />
+                </div>
+                <textarea class="w-full border p-2 rounded mt-2" name="options_json" rows="2">{ v.Options }</textarea>
+                <div class="mt-2">
+                  <button class="px-3 py-2 border rounded" type="submit">Update</button>
+                </div>
+              </form>
+
+              <form method="post" action={ "/admin/products/" + p.ID + "/variants/" + v.ID + "/sku" } class="mt-3 space-y-2">
+                <input type="hidden" name="csrf_token" value={ csrf }/>
+                <div class="text-sm">Current SKU: <strong>{ v.SKU }</strong></div>
+                <input class="border p-2 rounded w-full mt-2" name="new_sku" placeholder="New SKU" />
+                <label class="text-sm block mt-1">
+                  <input type="checkbox" name="confirm_sku_change" value="1" /> SKU değişimini onaylıyorum
+                </label>
+                <button class="px-3 py-2 border rounded" type="submit">Change SKU</button>
+              </form>
+
+              <form method="post" action={ "/admin/products/" + p.ID + "/variants/" + v.ID + "/delete" } class="mt-3">
+                <input type="hidden" name="csrf_token" value={ csrf }/>
+                <button class="underline" type="submit">Delete Variant</button>
+              </form>
+            </td>
+            <td class="p-2">{ v.PriceCents } { v.Currency }</td>
+            <td class="p-2">{ v.Stock }</td>
+            <td class="p-2"><code>{ v.Options }</code></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <h2 class="text-xl font-semibold mb-2">Images</h2>
+
+    <form method="post" action={ "/admin/products/" + p.ID + "/images/upload" } enctype="multipart/form-data" class="space-y-2 mb-4">
+      <input type="hidden" name="csrf_token" value={ csrf }/>
+      <div class="grid grid-cols-2 gap-2">
+        <input class="border p-2 rounded" type="file" name="image" accept="image/*" />
+        <input class="border p-2 rounded" name="position" placeholder="Position (0..)" value="0" />
+      </div>
+      <button class="px-4 py-2 border rounded" type="submit">Upload Image</button>
+    </form>
+
+    <table class="w-full border-collapse">
+      <thead>
+        <tr class="border-b">
+          <th class="text-left p-2">Position</th>
+          <th class="text-left p-2">URL</th>
+          <th class="text-left p-2">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        for _, im := range p.Images {
+          <tr class="border-b">
+            <td class="p-2">{ im.Position }</td>
+            <td class="p-2">{ im.URL }</td>
+            <td class="p-2">
+              <form method="post" action={ "/admin/products/" + p.ID + "/images/" + im.ID + "/delete" }>
+                <input type="hidden" name="csrf_token" value={ csrf }/>
+                <button class="underline" type="submit">Delete</button>
+              </form>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+}
+
+func formAction(id string, isEdit bool) string {
+  if isEdit {
+    return "/admin/products/" + id
+  }
+  return "/admin/products"
+}
+
+func itoa(n int) string { return fmt.Sprintf("%d", n) }

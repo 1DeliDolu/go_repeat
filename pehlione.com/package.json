@@ -1,0 +1,16 @@
+{
+  "private": true,
+  "scripts": {
+    "build:css": "postcss ./assets/app.css -o ./static/css/app.css",
+    "dev:css": "postcss ./assets/app.css -o ./static/css/app.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "postcss": "^8.0.0",
+    "postcss-cli": "^11.0.0",
+    "tailwindcss": "^4.1.18"
+  },
+  "dependencies": {
+    "@tailwindcss/cli": "^4.1.18"
+  }
+}

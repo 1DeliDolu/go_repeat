@@ -1,0 +1,29 @@
+package pages
+
+import (
+	"pehlione.com/app/pkg/view"
+	"pehlione.com/app/templates/layout"
+)
+
+templ OrderPay(flash *view.Flash, csrf string, orderID string, total string, idemKey string) {
+	@layout.Base("Pay Order", flash, OrderPayBody(csrf, orderID, total, idemKey))
+}
+
+templ OrderPayBody(csrf string, orderID string, total string, idemKey string) {
+	<h1 class="text-2xl font-semibold mb-4">Ödeme</h1>
+
+	<div class="border rounded p-3 mb-4">
+		<div><strong>Order:</strong> { orderID }</div>
+		<div class="mt-2"><strong>Total:</strong> { total }</div>
+	</div>
+
+	<form method="post" action={ "/orders/" + orderID + "/pay" }>
+		<input type="hidden" name="csrf_token" value={ csrf }/>
+		<input type="hidden" name="idempotency_key" value={ idemKey }/>
+		<button class="px-4 py-2 border rounded" type="submit">Mock Pay (Successful)</button>
+	</form>
+
+	<div class="mt-6">
+		<a class="underline" href={ "/orders/" + orderID }>Siparişe dön</a>
+	</div>
+}
