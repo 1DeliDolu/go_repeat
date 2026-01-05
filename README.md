@@ -37,6 +37,7 @@ Go tabanlı, server-side rendering (SSR) kullanan modern e-ticaret platformu.
 
 ## 🏗️ Proje Yapısı
 
+---
 ```
 pehlione.com/
 ├── cmd/
@@ -89,6 +90,7 @@ pehlione.com/
 ├── migrations/         # Database migrations (goose)
 └── magefile.go         # Build automation (Mage)
 ```
+---
 
 ## 🗄️ Database Schema
 
@@ -135,41 +137,54 @@ pehlione.com/
 ### Adımlar
 
 1. **Projeyi klonlayın**
+---
 ```bash
 git clone <repo-url>
 cd pehlione.com
 ```
+---
 
 2. **Bağımlılıkları yükleyin**
+---
 ```bash
 go mod download
 npm install  # Tailwind için
 ```
+---
 
 3. **Environment variables ayarlayın**
+---
 ```bash
 # .env dosyası oluşturun
 cp .env.example .env
 ```
+---
 
 Gerekli değişkenler:
+---
 ```env
 DB_DSN=user:pass@tcp(localhost:3306)/pehlione_go?parseTime=true
 SECRET_KEY=<64-char-hex-secret>
 SESSION_TTL_HOURS=168
 ```
+---
 
 4. **Database migration**
+---
 ```bash
 goose -dir migrations mysql "user:pass@/pehlione_go" up
 ```
+---
 
 5. **Templ generate**
+---
 ```bash
 templ generate
 ```
+---
 
 6. **Build ve çalıştır**
+---
 ```bash
 # Development (hot reload)
 mage dev
@@ -178,6 +193,7 @@ mage dev
 mage build
 ./bin/pehlione-web.exe
 ```
+---
 
 ## 🔐 Güvenlik
 
@@ -206,6 +222,7 @@ Database seed migration ile oluşturulur:
 ## 📝 API Endpoints
 
 ### Public Routes
+---
 ```
 GET  /                    # Ana sayfa
 GET  /products            # Ürün listesi
@@ -219,20 +236,25 @@ GET  /login               # Giriş formu
 POST /login               # Giriş işlemi (CSRF)
 POST /logout              # Çıkış (CSRF)
 ```
+---
 
 ### Authenticated Routes
+---
 ```
 GET  /account/orders      # Kullanıcı siparişleri
 GET  /orders/:id          # Sipariş detayı
 POST /orders/:id/pay      # Ödeme başlat (CSRF)
 ```
+---
 
 ### Admin Routes
+---
 ```
 GET  /admin/orders        # Tüm siparişler
 GET  /admin/orders/:id    # Sipariş detayı
 POST /admin/orders/:id    # Sipariş aksiyonu (CSRF)
 ```
+---
 
 ## 🚦 Middleware Stack
 
@@ -279,6 +301,7 @@ Request işleme sırası:
 - Email validation (guest için zorunlu)
 
 ### 3. Order Creation (Transaction)
+---
 ```
 1. Read cart items
 2. Lock product variants (FOR UPDATE)
@@ -289,6 +312,7 @@ Request işleme sırası:
 7. Create order_items
 8. Clear cart (DB or cookie)
 ```
+---
 
 ### 4. Stock Management
 - Pessimistic locking (SELECT FOR UPDATE)
@@ -298,11 +322,13 @@ Request işleme sırası:
 ## 🎨 Template System (Templ)
 
 ### Type-safe Components
+---
 ```go
 templ Cart(flash *view.Flash, p view.CartPage) {
     @layout.Base("Shopping Cart", flash, CartBody(p))
 }
 ```
+---
 
 ### View Models
 - **view.CartPage** - Sepet görünümü için
@@ -311,6 +337,7 @@ templ Cart(flash *view.Flash, p view.CartPage) {
 - **view.HeaderCtx** - Header context (auth, cart badge)
 
 ### Template Generation
+---
 ```bash
 # Generate _templ.go files
 templ generate
@@ -318,16 +345,20 @@ templ generate
 # Watch mode (development)
 templ generate --watch
 ```
+---
 
 ## 📊 Monitoring & Logging
 
 ### Structured Logging
+---
 ```go
 log.Printf("CartAdd: error adding item: %v", err)
 log.Printf("Checkout error (unhandled): %T - %v", err, err)
 ```
+---
 
 ### Request Tracking
+---
 ```json
 {
   "time":"2026-01-05T18:37:30Z",
@@ -341,6 +372,7 @@ log.Printf("Checkout error (unhandled): %T - %v", err, err)
   "client_ip":"::1"
 }
 ```
+---
 
 ## 🐛 Known Issues & TODOs
 
@@ -372,4 +404,4 @@ MIT License - see LICENSE file for details
 
 ## 📞 Contact
 
-Project Link: [https://github.com/username/pehlione.com](https://github.com/username/pehlione.com)
+Project Link: [https://github.com/1DeliDolu/go_repeat](https://github.com/1DeliDolu/go_repeat)
