@@ -164,6 +164,21 @@ func MigrateDown() error {
 	return sh.RunV("goose", "-dir", "./migrations", "mysql", os.Getenv("DB_DSN"), "down")
 }
 
+// MigrateReset: Reset DB (drop all tables and goose version, then run up)
+func MigrateReset() error {
+	fmt.Println("Resetting database...")
+	dsn := os.Getenv("DB_DSN")
+
+	// Run DROP script
+	if err := sh.RunV("goose", "-dir", "./migrations", "mysql", dsn, "reset"); err != nil {
+		fmt.Println("Warning: reset failed (might be first run):", err)
+	}
+
+	// Run migrations up
+	fmt.Println("Running migrations...")
+	return sh.RunV("goose", "-dir", "./migrations", "mysql", dsn, "up")
+}
+
 // CSS: Build Tailwind CSS via PostCSS (Tailwind v4)
 func CSS() error {
 	fmt.Println("Building CSS (tailwind via postcss)...")

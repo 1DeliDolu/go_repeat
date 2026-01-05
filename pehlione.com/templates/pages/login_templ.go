@@ -191,7 +191,7 @@ func LoginBody(csrfToken string, returnTo string, form view.LoginForm, errs vali
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<button class=\"px-4 py-2 border rounded\" type=\"submit\">Giriş</button></form></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<button class=\"px-4 py-2 border rounded\" type=\"submit\">Giriş</button></form><div class=\"mt-6 pt-6 border-t\"><p class=\"text-sm text-gray-600 mb-3\">Hesabınız yok mu?</p><a href=\"/signup\" class=\"px-4 py-2 border rounded inline-block hover:bg-gray-50 font-semibold\">Kayıt Ol</a></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

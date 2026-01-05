@@ -24,6 +24,7 @@ type Session struct {
 	TokenHash  []byte    `gorm:"type:binary(32);not null;uniqueIndex:ux_sessions_token_hash"`
 	ExpiresAt  time.Time `gorm:"type:datetime(3);not null"`
 	CreatedAt  time.Time `gorm:"type:datetime(3);not null"`
+	UpdatedAt  time.Time `gorm:"type:datetime(3);not null"`
 	LastSeenAt time.Time `gorm:"type:datetime(3);not null"`
 }
 

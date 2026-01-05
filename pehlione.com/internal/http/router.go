@@ -17,6 +17,7 @@ import (
 	adminHandlers "pehlione.com/app/internal/http/handlers/admin"
 	"pehlione.com/app/internal/http/middleware"
 	"pehlione.com/app/internal/http/render"
+	"pehlione.com/app/internal/modules/email"
 	"pehlione.com/app/internal/modules/orders"
 	"pehlione.com/app/internal/modules/payments"
 	"pehlione.com/app/internal/storage"
@@ -111,6 +112,12 @@ func NewRouter(logger *slog.Logger, db *gorm.DB) *gin.Engine {
 
 	// Auth (DB-backed): signup/login/logout
 	authH := handlers.NewAuthHandlers(db, flashCodec, sessCfg, cartCK)
+
+	// Set up email service if configured
+	if mailtrapURL := os.Getenv("MAILTRAP_API_URL"); mailtrapURL != "" {
+		authH.SetEmailService(email.NewMailtrapProvider())
+	}
+
 	r.GET("/signup", authH.SignupGet)
 	r.POST("/signup", authH.SignupPost)
 	r.GET("/login", authH.LoginGet)

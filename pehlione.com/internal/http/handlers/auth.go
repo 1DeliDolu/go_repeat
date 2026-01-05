@@ -51,22 +51,33 @@ func containsScheme(s string) bool {
 
 // AuthHandlers contains handlers for authentication routes.
 type AuthHandlers struct {
-	db      *gorm.DB
-	flash   *flash.Codec
-	sessCfg middleware.SessionCfg
-	repo    *auth.Repo
-	cartCK  *cartcookie.Codec
+	db       *gorm.DB
+	flash    *flash.Codec
+	sessCfg  middleware.SessionCfg
+	repo     *auth.Repo
+	cartCK   *cartcookie.Codec
+	emailSvc interface {
+		SendEmail(to, toName, subject, htmlBody, textBody string) error
+	}
 }
 
 // NewAuthHandlers creates a new AuthHandlers instance.
 func NewAuthHandlers(db *gorm.DB, flashCodec *flash.Codec, sessCfg middleware.SessionCfg, cartCK *cartcookie.Codec) *AuthHandlers {
 	return &AuthHandlers{
-		db:      db,
-		flash:   flashCodec,
-		sessCfg: sessCfg,
-		repo:    auth.NewRepo(db),
-		cartCK:  cartCK,
+		db:       db,
+		flash:    flashCodec,
+		sessCfg:  sessCfg,
+		repo:     auth.NewRepo(db),
+		cartCK:   cartCK,
+		emailSvc: nil, // Will be set by router if email is configured
 	}
+}
+
+// SetEmailService sets the email service for sending transactional emails.
+func (h *AuthHandlers) SetEmailService(svc interface {
+	SendEmail(to, toName, subject, htmlBody, textBody string) error
+}) {
+	h.emailSvc = svc
 }
 
 // SignupGet renders the signup page.
@@ -131,6 +142,13 @@ func (h *AuthHandlers) SignupPost(c *gin.Context) {
 	if err := h.repo.Create(user); err != nil {
 		c.Error(err)
 		return
+	}
+
+	// Send welcome email if email service is available
+	if h.emailSvc != nil {
+		_ = h.emailSvc.SendEmail(user.Email, "", "Pehlione'ye Hoş Geldiniz!",
+			"<p>Hoş geldiniz! Kaliteli ürünler keşfetmeye başlayın.</p>",
+			"Hoş geldiniz! Kaliteli ürünler keşfetmeye başlayın.")
 	}
 
 	// Redirect to login with return_to preserved

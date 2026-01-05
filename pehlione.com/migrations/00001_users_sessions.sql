@@ -1,4 +1,20 @@
 -- +goose Up
+-- First DROP all dependent tables to avoid FK conflicts
+DROP TABLE IF EXISTS order_financial_entries;
+DROP TABLE IF EXISTS order_events;
+DROP TABLE IF EXISTS order_items;
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS refunds;
+DROP TABLE IF EXISTS provider_events;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS cart_items;
+DROP TABLE IF EXISTS carts;
+DROP TABLE IF EXISTS product_images;
+DROP TABLE IF EXISTS product_variants;
+DROP TABLE IF EXISTS products;
+DROP TABLE IF EXISTS sessions;
+DROP TABLE IF EXISTS users;
+
 CREATE TABLE users (
   id CHAR(36) NOT NULL,
   email VARCHAR(255) NOT NULL,
@@ -16,6 +32,7 @@ CREATE TABLE sessions (
   token_hash BINARY(32) NOT NULL,
   expires_at DATETIME(3) NOT NULL,
   created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
   last_seen_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   PRIMARY KEY (id),
   UNIQUE KEY ux_sessions_token_hash (token_hash),
