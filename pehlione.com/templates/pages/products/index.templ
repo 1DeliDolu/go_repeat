@@ -1,0 +1,81 @@
+package products
+
+import (
+	"fmt"
+
+	"pehlione.com/app/templates/shared"
+)
+
+type ProductsIndexVM struct {
+	Title      string
+	AlertError string
+	CSRFToken  string
+	Products   []ProductCardVM
+}
+
+type ProductCardVM struct {
+	Title            string
+	Subtitle         string
+	Slug             string
+	ImageURL         string
+	Currency         string
+	PriceCents       int64
+	DefaultVariantID string
+}
+
+templ ProductsIndexPage(vm ProductsIndexVM) {
+	@shared.Base(shared.BaseVM{Title: vm.Title}) {
+		<div class="bg-white">
+			<div class="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
+				<div class="flex items-end justify-between gap-4">
+					<h2 class="text-2xl font-bold tracking-tight text-gray-900">Ürünler</h2>
+					<a href="/cart" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">Sepete git</a>
+				</div>
+
+				if vm.AlertError != "" {
+					<div class="mt-6 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+						{ vm.AlertError }
+					</div>
+				}
+
+				<div class="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
+					for _, p := range vm.Products {
+						<div class="group relative">
+							<a href={ fmt.Sprintf("/products/%s", p.Slug) }>
+								if p.ImageURL != "" {
+									<img src={ p.ImageURL } alt={ p.Title } class="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 lg:aspect-auto lg:h-80"/>
+								} else {
+									<div class="aspect-square w-full rounded-md bg-gray-100 lg:h-80"></div>
+								}
+							</a>
+
+							<div class="mt-4 flex justify-between gap-4">
+								<div>
+									<h3 class="text-sm text-gray-700">
+										<a href={ fmt.Sprintf("/products/%s", p.Slug) }>
+											<span aria-hidden="true" class="absolute inset-0"></span>
+											{ p.Title }
+										</a>
+									</h3>
+									<p class="mt-1 text-sm text-gray-500">{ p.Subtitle }</p>
+								</div>
+								<p class="text-sm font-medium text-gray-900">{ shared.FormatMoney(p.Currency, p.PriceCents) }</p>
+							</div>
+
+							<form method="POST" action="/cart/items" class="mt-4">
+								if vm.CSRFToken != "" {
+									<input type="hidden" name="csrf_token" value={ vm.CSRFToken }/>
+								}
+								<input type="hidden" name="variant_id" value={ p.DefaultVariantID }/>
+								<input type="hidden" name="qty" value="1"/>
+								<button type="submit" class="w-full rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+									Sepete ekle
+								</button>
+							</form>
+						</div>
+					}
+				</div>
+			</div>
+		</div>
+	}
+}

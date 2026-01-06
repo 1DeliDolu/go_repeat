@@ -5,40 +5,64 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+
+	"pehlione.com/app/internal/http/cartcookie"
+	cartmod "pehlione.com/app/internal/modules/cart"
+	"pehlione.com/app/pkg/view"
 )
 
 const cartBadgeKey = "cart_badge_qty"
+const cartPreviewKey = "cart_preview"
 
 // Cookie qty hesaplamak için "hook".
 type CookieQtyFunc func(c *gin.Context) (int, error)
 
 type CartBadgeCfg struct {
-	DB        *gorm.DB
-	CookieQty CookieQtyFunc
+	DB         *gorm.DB
+	CookieQty  CookieQtyFunc
+	CartSvc    *cartmod.Service
+	CartCookie *cartcookie.Codec
 }
 
 func CartBadge(cfg CartBadgeCfg) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		qty := 0
+		preview := view.CartPage{}
+		previewSet := false
 
-		// 1) Logged-in: use cached cart lookup (very efficient after first request)
-		if u, ok := CurrentUser(c); ok && cfg.DB != nil {
-			if n, err := cartQtyFromDBCached(c.Request.Context(), cfg.DB, c, u.ID); err == nil {
-				qty = n
-				// If DB cart found, don't use cookie fallback
-				c.Set(cartBadgeKey, qty)
-				c.Next()
-				return
+		if cfg.CartSvc != nil {
+			if u, ok := CurrentUser(c); ok {
+				if page, err := cfg.CartSvc.BuildCartPageForUser(c, u.ID); err == nil {
+					preview = page
+					previewSet = true
+					qty = page.Count
+				}
+			} else if cfg.CartCookie != nil {
+				if cc, err := cfg.CartCookie.Get(c); err == nil && cc != nil {
+					if page, err := cfg.CartSvc.BuildCartPageFromCookie(c, cc); err == nil {
+						preview = page
+						previewSet = true
+						qty = page.Count
+					}
+				}
 			}
 		}
 
-		// 2) No DB cart (guest or DB empty): try cookie fallback
-		if cfg.CookieQty != nil {
-			if n, err := cfg.CookieQty(c); err == nil && n > 0 {
-				qty = n
+		if !previewSet {
+			// 1) Logged-in: use cached cart lookup (very efficient after first request)
+			if u, ok := CurrentUser(c); ok && cfg.DB != nil {
+				if n, err := cartQtyFromDBCached(c.Request.Context(), cfg.DB, c, u.ID); err == nil {
+					qty = n
+				}
+			} else if cfg.CookieQty != nil {
+				// 2) No DB cart (guest or DB empty): try cookie fallback
+				if n, err := cfg.CookieQty(c); err == nil && n > 0 {
+					qty = n
+				}
 			}
 		}
 
+		c.Set(cartPreviewKey, preview)
 		c.Set(cartBadgeKey, qty)
 		c.Next()
 	}
@@ -51,6 +75,18 @@ func GetCartBadgeQty(c *gin.Context) int {
 	}
 	n, _ := v.(int)
 	return n
+}
+
+func GetCartPreview(c *gin.Context) view.CartPage {
+	v, ok := c.Get(cartPreviewKey)
+	if !ok {
+		return view.CartPage{}
+	}
+	page, ok := v.(view.CartPage)
+	if !ok {
+		return view.CartPage{}
+	}
+	return page
 }
 
 // DB schema varsayımı (minimum):
@@ -66,7 +102,7 @@ FROM cart_items ci
 WHERE ci.cart_id = (
   SELECT c.id
   FROM carts c
-  WHERE c.user_id = ?
+  WHERE c.user_id = ? AND c.status = 'open'
   ORDER BY c.updated_at DESC
   LIMIT 1
 );`

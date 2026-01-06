@@ -11,6 +11,7 @@ type HeaderCtx struct {
 	UserEmail string // optional: display in header
 	CSRFToken string // required: for logout form
 	CartQty   int    // number of items in cart
+	Cart      CartPage
 }
 
 // WithHeaderCtx injects HeaderCtx into request context.

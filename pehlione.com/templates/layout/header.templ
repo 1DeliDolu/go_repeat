@@ -107,7 +107,7 @@ templ Header() {
 										<span aria-hidden="true" class="absolute inset-x-0 -bottom-px z-30 h-0.5 bg-transparent duration-200 ease-in group-has-open/popover:bg-indigo-600 group-has-open/popover-group:duration-150 group-has-open/popover-group:ease-out"></span>
 									</button>
 								</div>
-								<el-popover id="desktop-menu-products" anchor="bottom" popover class="fixed left-0 right-0 overflow-visible bg-white text-sm text-gray-500 transition transition-discrete [--anchor-gap:0px] backdrop:bg-transparent open:block data-closed:opacity-0 data-enter:duration-200 data-enter:ease-out data-leave:duration-150 data-leave:ease-in z-50 shadow-lg">
+								<el-popover id="desktop-menu-products" anchor="bottom" popover class="fixed left-0 right-0 overflow-visible bg-white text-sm text-gray-500 transition transition-discrete [--anchor-gap:0px] backdrop:bg-transparent open:block data-closed:opacity-0 data-enter:duration-200 data-enter:ease-out data-leave:duration-150 data-leave:ease-in [z-index:1] shadow-lg">
 									<div aria-hidden="true" class="absolute inset-0 top-1/2 bg-white shadow-sm"></div>
 									<div class="relative bg-white">
 										<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -236,14 +236,18 @@ templ Header() {
 						</div>
 
 						<div class="mt-8">
-							@CartDrawerContent()
+							@CartDrawerContent(view.HeaderCtxFrom(ctx))
 						</div>
 					</div>
 
 					<div class="border-t border-gray-200 px-4 py-6 sm:px-6">
 						<div class="flex justify-between text-base font-medium text-gray-900">
 							<p>Toplam</p>
-							<p>$0.00</p>
+							if h := view.HeaderCtxFrom(ctx); len(h.Cart.Items) > 0 {
+								<p>{ h.Cart.Total }</p>
+							} else {
+								<p class="text-gray-500">0</p>
+							}
 						</div>
 						<p class="mt-0.5 text-sm text-gray-500">Kargo ve vergiler ödeme sırasında hesaplanacaktır.</p>
 						<div class="mt-6">
@@ -267,83 +271,40 @@ templ Header() {
 }
 
 // CartDrawerContent renders cart items in the drawer
-templ CartDrawerContent() {
+templ CartDrawerContent(h view.HeaderCtx) {
 	<div class="flow-root">
-		<ul role="list" class="-my-6 divide-y divide-gray-200">
-			<li class="flex py-6">
-				<div class="size-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
-					<img src="https://tailwindcss.com/plus-assets/img/ecommerce-images/shopping-cart-page-04-product-01.jpg" alt="Throwback Hip Bag" class="size-full object-cover" />
-				</div>
-
-				<div class="ml-4 flex flex-1 flex-col">
-					<div>
-						<div class="flex justify-between text-base font-medium text-gray-900">
-							<h3>
-								<a href="#">Throwback Hip Bag</a>
-							</h3>
-							<p class="ml-4">$90.00</p>
+		if len(h.Cart.Items) == 0 {
+			<div id="empty-cart-message" class="py-12">
+				<p class="text-center text-sm text-gray-500">
+					Sepetiniz boş. Ürün eklemek için
+					<a href="/products" class="font-medium text-indigo-600 hover:text-indigo-500">ürünleri inceleyin</a>.
+				</p>
+			</div>
+		} else {
+			<ul id="cart-items-list" role="list" class="-my-6 divide-y divide-gray-200">
+				for _, it := range h.Cart.Items {
+					<li class="flex py-6">
+						if it.ImageURL != "" {
+							<img src={ it.ImageURL } alt={ it.ProductName } class="size-24 flex-none rounded-md object-cover"/>
+						} else {
+							<div class="size-24 flex-none rounded-md bg-gray-100"></div>
+						}
+						<div class="ml-4 flex flex-1 flex-col">
+							<div class="flex justify-between text-base font-medium text-gray-900">
+								<h3>
+									<a href={ "/products/" + it.ProductSlug } class="hover:text-indigo-600">{ it.ProductName }</a>
+								</h3>
+								<p class="ml-4 whitespace-nowrap">{ it.LineTotal }</p>
+							</div>
+							<p class="mt-1 text-sm text-gray-500">SKU: { it.VariantID }</p>
+							<div class="mt-2 flex items-end justify-between text-sm">
+								<p class="text-gray-500">Miktar: { it.Qty }</p>
+								<p class="font-medium text-gray-900">{ it.UnitPrice }</p>
+							</div>
 						</div>
-						<p class="mt-1 text-sm text-gray-500">Salmon</p>
-					</div>
-					<div class="flex flex-1 items-end justify-between text-sm">
-						<p class="text-gray-500">Adet: 1</p>
-
-						<div class="flex">
-							<button type="button" class="font-medium text-indigo-600 hover:text-indigo-500">Kaldır</button>
-						</div>
-					</div>
-				</div>
-			</li>
-
-			<li class="flex py-6">
-				<div class="size-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
-					<img src="https://tailwindcss.com/plus-assets/img/ecommerce-images/shopping-cart-page-04-product-02.jpg" alt="Medium Stuff Satchel" class="size-full object-cover" />
-				</div>
-
-				<div class="ml-4 flex flex-1 flex-col">
-					<div>
-						<div class="flex justify-between text-base font-medium text-gray-900">
-							<h3>
-								<a href="#">Medium Stuff Satchel</a>
-							</h3>
-							<p class="ml-4">$32.00</p>
-						</div>
-						<p class="mt-1 text-sm text-gray-500">Blue</p>
-					</div>
-					<div class="flex flex-1 items-end justify-between text-sm">
-						<p class="text-gray-500">Adet: 1</p>
-
-						<div class="flex">
-							<button type="button" class="font-medium text-indigo-600 hover:text-indigo-500">Kaldır</button>
-						</div>
-					</div>
-				</div>
-			</li>
-
-			<li class="flex py-6">
-				<div class="size-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
-					<img src="https://tailwindcss.com/plus-assets/img/ecommerce-images/shopping-cart-page-04-product-03.jpg" alt="Zip Tote Basket" class="size-full object-cover" />
-				</div>
-
-				<div class="ml-4 flex flex-1 flex-col">
-					<div>
-						<div class="flex justify-between text-base font-medium text-gray-900">
-							<h3>
-								<a href="#">Zip Tote Basket</a>
-							</h3>
-							<p class="ml-4">$140.00</p>
-						</div>
-						<p class="mt-1 text-sm text-gray-500">White and black</p>
-					</div>
-					<div class="flex flex-1 items-end justify-between text-sm">
-						<p class="text-gray-500">Adet: 1</p>
-
-						<div class="flex">
-							<button type="button" class="font-medium text-indigo-600 hover:text-indigo-500">Kaldır</button>
-						</div>
-					</div>
-				</div>
-			</li>
-		</ul>
+					</li>
+				}
+			</ul>
+		}
 	</div>
 }

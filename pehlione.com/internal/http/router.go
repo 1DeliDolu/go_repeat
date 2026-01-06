@@ -18,9 +18,11 @@ import (
 	adminHandlers "pehlione.com/app/internal/http/handlers/admin"
 	"pehlione.com/app/internal/http/middleware"
 	"pehlione.com/app/internal/http/render"
+	"pehlione.com/app/internal/modules/cart"
 	"pehlione.com/app/internal/modules/email"
 	"pehlione.com/app/internal/modules/orders"
 	"pehlione.com/app/internal/modules/payments"
+	"pehlione.com/app/internal/modules/products"
 	"pehlione.com/app/internal/modules/users"
 	"pehlione.com/app/internal/storage"
 	"pehlione.com/app/pkg/view"
@@ -29,6 +31,7 @@ import (
 func NewRouter(logger *slog.Logger, db *gorm.DB) *gin.Engine {
 	// --- Secrets / Codecs ---
 	secret := mustSecret()
+	appBaseURL := envOr("APP_BASE_URL", "http://localhost:8080")
 
 	flashCookieName := envOr("FLASH_COOKIE_NAME", "pehlione_flash")
 	flashSecure := envBool("FLASH_COOKIE_SECURE", false)
@@ -53,6 +56,7 @@ func NewRouter(logger *slog.Logger, db *gorm.DB) *gin.Engine {
 	cartCKName := envOr("CART_COOKIE_NAME", "pehlione_cart")
 	cartCKSecure := envBool("CART_COOKIE_SECURE", false)
 	cartCK := cartcookie.New(secret, cartCKName, cartCKSecure)
+	cartSvc := cart.NewService(db)
 
 	// --- Router + Middleware order ---
 	r := gin.New()
@@ -66,6 +70,8 @@ func NewRouter(logger *slog.Logger, db *gorm.DB) *gin.Engine {
 	r.Use(middleware.CSRF(csrfCfg))
 	r.Use(middleware.SessionMiddleware(sessCfg))
 
+	var emailSvc *email.OutboxService
+
 	// Cart badge: DB-backed (logged-in) + cookie fallback (guest)
 	cookieQtyFunc := func(c *gin.Context) (int, error) {
 		// cartCK codec'i yalnızca cart ID tutuyor, items bilgisi yok.
@@ -74,8 +80,10 @@ func NewRouter(logger *slog.Logger, db *gorm.DB) *gin.Engine {
 		return 0, nil
 	}
 	r.Use(middleware.CartBadge(middleware.CartBadgeCfg{
-		DB:        db,
-		CookieQty: cookieQtyFunc,
+		DB:         db,
+		CookieQty:  cookieQtyFunc,
+		CartSvc:    cartSvc,
+		CartCookie: cartCK,
 	}))
 
 	// Error pipeline + panic safety
@@ -91,9 +99,12 @@ func NewRouter(logger *slog.Logger, db *gorm.DB) *gin.Engine {
 	r.GET("/", handlers.Home)
 	r.GET("/healthz", handlers.Healthz)
 
-	// Products (public product listing for HTMX demo)
-	productsH := handlers.NewProductsHandler()
+	// Products (public product listing)
+	productsRepo := products.NewGormRepo(db)
+	productsSvc := products.NewService(productsRepo)
+	productsH := handlers.NewProductsHandler(productsSvc)
 	r.GET("/products", productsH.List)
+	r.GET("/products/:slug", productsH.Show)
 
 	// Cart codec
 	cartCodec := cartcookie.New(secret, "pehlione_cart", false) // dev: secure=false
@@ -101,7 +112,7 @@ func NewRouter(logger *slog.Logger, db *gorm.DB) *gin.Engine {
 	// Cart (public shopping cart page)
 	cartH := handlers.NewCartHandler(db, flashCodec, cartCodec)
 	r.GET("/cart", cartH.Get)
-	r.POST("/cart/add", cartH.Add) // SSR: add to cart + redirect
+	r.POST("/cart/items", cartH.Add) // SSR: add to cart + redirect (form submission dari product pages)
 
 	// Company (public company info page)
 	companyH := handlers.NewCompanyHandler()
@@ -114,11 +125,6 @@ func NewRouter(logger *slog.Logger, db *gorm.DB) *gin.Engine {
 
 	// Auth (DB-backed): signup/login/logout
 	authH := handlers.NewAuthHandlers(db, flashCodec, sessCfg, cartCK)
-
-	// Set up email service if configured
-	if mailtrapURL := os.Getenv("MAILTRAP_API_URL"); mailtrapURL != "" {
-		// Email service will be set during email worker initialization below
-	}
 
 	r.GET("/signup", authH.SignupGet)
 	r.POST("/signup", authH.SignupPost)
@@ -182,31 +188,9 @@ func NewRouter(logger *slog.Logger, db *gorm.DB) *gin.Engine {
 	account.Use(middleware.RequireAuth(flashCodec))
 	account.GET("/orders", accountH.List)
 
-	// Checkout & Orders
-	orderSvc := orders.NewService(db)
-	paySvc := payments.NewService(db, provider)
-	checkoutH := handlers.NewCheckoutHandler(db, flashCodec, cartCK, orderSvc)
-	ordersH := handlers.NewOrdersHandler(db, flashCodec, paySvc)
-	cartBadgeH := handlers.NewCartBadgeHandler(db)
-	cartAddH := handlers.NewCartAddHandler(db)
-
-	r.GET("/checkout", checkoutH.Get)
-	r.POST("/checkout", checkoutH.Post)
-
-	r.GET("/orders/:id", ordersH.Detail)
-	r.GET("/orders/:id/pay", ordersH.PayGet)
-	r.POST("/orders/:id/pay", ordersH.PayPost)
-
-	// HTMX cart endpoints
-	r.GET("/api/cart/badge", cartBadgeH.GetBadge)
-	r.POST("/api/cart/add", cartAddH.AddItem)
-
-	// Webhooks (not CSRF-protected; signature is security layer)
-	r.POST("/webhooks/mock", webhookH.Handle)
-
 	// --- Email worker initialization ---
 	if envBool("EMAIL_SEND_ENABLED", true) {
-		emailSvc := email.NewService(db)
+		emailSvc = email.NewService(db)
 
 		// Create SMTP sender
 		smtpCfg := email.SMTPCfg{
@@ -230,7 +214,6 @@ func NewRouter(logger *slog.Logger, db *gorm.DB) *gin.Engine {
 		}()
 
 		// Inject email service and verify service into auth handlers
-		appBaseURL := envOr("APP_BASE_URL", "http://localhost:8080")
 		verifyService := users.NewVerifyService(db, emailSvc, appBaseURL)
 		authH.SetEmailService(emailSvc)
 		authH.SetVerifyService(verifyService)
@@ -238,6 +221,29 @@ func NewRouter(logger *slog.Logger, db *gorm.DB) *gin.Engine {
 	} else {
 		log.Printf("Email worker: disabled (EMAIL_SEND_ENABLED=false)")
 	}
+
+	// Checkout & Orders
+	orderSvc := orders.NewService(db)
+	paySvc := payments.NewService(db, provider)
+	checkoutH := handlers.NewCheckoutHandler(db, flashCodec, cartCK, orderSvc, emailSvc, appBaseURL)
+	ordersH := handlers.NewOrdersHandler(db, flashCodec, paySvc)
+	cartBadgeH := handlers.NewCartBadgeHandler(db)
+	cartAddH := handlers.NewCartAddHandler(db)
+
+	r.GET("/checkout", checkoutH.Get)
+	r.POST("/checkout", checkoutH.Post)
+
+	r.GET("/orders/:id", ordersH.Detail)
+	r.GET("/orders/:id/invoice.pdf", ordersH.InvoicePDF)
+	r.GET("/orders/:id/pay", ordersH.PayGet)
+	r.POST("/orders/:id/pay", ordersH.PayPost)
+
+	// HTMX cart endpoints
+	r.GET("/api/cart/badge", cartBadgeH.GetBadge)
+	r.POST("/api/cart/add", cartAddH.AddItem)
+
+	// Webhooks (not CSRF-protected; signature is security layer)
+	r.POST("/webhooks/mock", webhookH.Handle)
 
 	return r
 }

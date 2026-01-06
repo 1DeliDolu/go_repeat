@@ -1,8 +1,11 @@
 package handlers
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -12,6 +15,7 @@ import (
 	"pehlione.com/app/internal/http/render"
 	"pehlione.com/app/internal/modules/orders"
 	"pehlione.com/app/internal/modules/payments"
+	"pehlione.com/app/internal/pdf"
 	"pehlione.com/app/internal/shared/apperr"
 	"pehlione.com/app/pkg/view"
 	"pehlione.com/app/templates/pages"
@@ -139,4 +143,90 @@ func (h *OrdersHandler) PayPost(c *gin.Context) {
 	}
 
 	render.RedirectWithFlash(c, h.Flash, "/orders/"+o.ID, view.FlashError, "Ödeme başarısız.")
+}
+
+func (h *OrdersHandler) InvoicePDF(c *gin.Context) {
+	id := c.Param("id")
+	repo := orders.NewRepo(h.DB)
+
+	o, items, err := repo.GetWithItems(c.Request.Context(), id)
+	if err != nil {
+		middleware.Fail(c, apperr.NotFoundErr("Sipariş bulunamadı."))
+		return
+	}
+
+	if o.UserID != nil {
+		u, ok := middleware.CurrentUser(c)
+		if !ok || (u.ID != *o.UserID && u.Role != "admin") {
+			middleware.Fail(c, apperr.ForbiddenErr("Bu siparişe erişim yok."))
+			return
+		}
+	}
+
+	addr := parseOrderAddress(o.ShippingAddressJSON)
+	data := pdf.InvoiceData{
+		Order:          o,
+		Items:          items,
+		ShippingLines:  formatOrderAddressLines(addr),
+		ShippingMethod: view.ShippingLabel(addr.ShippingMethod),
+		PaymentMethod:  view.PaymentMethodLabel(addr.PaymentMethod),
+	}
+
+	bytes, err := pdf.GenerateInvoice(data)
+	if err != nil {
+		middleware.Fail(c, apperr.Wrap(err))
+		return
+	}
+
+	filename := fmt.Sprintf("pehlione-order-%s.pdf", o.ID)
+	c.Header("Content-Type", "application/pdf")
+	c.Header("Content-Disposition", `attachment; filename="`+filename+`"`)
+	c.Writer.Write(bytes)
+}
+
+type orderAddress struct {
+	FirstName      string `json:"first_name"`
+	LastName       string `json:"last_name"`
+	Address1       string `json:"address1"`
+	Address2       string `json:"address2"`
+	City           string `json:"city"`
+	PostalCode     string `json:"postal_code"`
+	Country        string `json:"country"`
+	Phone          string `json:"phone"`
+	ShippingMethod string `json:"shipping_method"`
+	PaymentMethod  string `json:"payment_method"`
+}
+
+func parseOrderAddress(data []byte) orderAddress {
+	var addr orderAddress
+	if len(data) == 0 {
+		return addr
+	}
+	_ = json.Unmarshal(data, &addr)
+	return addr
+}
+
+func formatOrderAddressLines(addr orderAddress) []string {
+	var lines []string
+	full := strings.TrimSpace(strings.TrimSpace(addr.FirstName) + " " + strings.TrimSpace(addr.LastName))
+	if full != "" {
+		lines = append(lines, full)
+	}
+	if addr.Address1 != "" {
+		lines = append(lines, addr.Address1)
+	}
+	if addr.Address2 != "" {
+		lines = append(lines, addr.Address2)
+	}
+	loc := strings.TrimSpace(strings.TrimSpace(addr.PostalCode) + " " + addr.City)
+	if loc != "" {
+		lines = append(lines, loc)
+	}
+	if addr.Country != "" {
+		lines = append(lines, strings.ToUpper(addr.Country))
+	}
+	if addr.Phone != "" {
+		lines = append(lines, "Tel: "+addr.Phone)
+	}
+	return lines
 }

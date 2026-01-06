@@ -22,15 +22,16 @@ type Product struct {
 func (Product) TableName() string { return "products" }
 
 type Variant struct {
-	ID         string         `gorm:"type:char(36);primaryKey"`
-	ProductID  string         `gorm:"type:char(36);not null;index:ix_variants_product_id"`
-	SKU        string         `gorm:"type:varchar(64);not null;uniqueIndex:ux_variants_sku"`
-	Options    datatypes.JSON `gorm:"type:json;not null"`
-	PriceCents int            `gorm:"not null"`
-	Currency   string         `gorm:"type:char(3);not null;default:EUR"`
-	Stock      int            `gorm:"not null;default:0"`
-	CreatedAt  time.Time      `gorm:"type:datetime(3);not null"`
-	UpdatedAt  time.Time      `gorm:"type:datetime(3);not null"`
+	ID             string         `gorm:"type:char(36);primaryKey"`
+	ProductID      string         `gorm:"type:char(36);not null;index:ix_variants_product_id"`
+	SKU            string         `gorm:"type:varchar(64);not null;uniqueIndex:ux_variants_sku"`
+	Options        datatypes.JSON `gorm:"type:json;not null"`
+	PriceCents     int            `gorm:"not null"`
+	CompareAtCents int            `gorm:"not null;default:0"`
+	Currency       string         `gorm:"type:char(3);not null;default:EUR"`
+	Stock          int            `gorm:"not null;default:0"`
+	CreatedAt      time.Time      `gorm:"type:datetime(3);not null"`
+	UpdatedAt      time.Time      `gorm:"type:datetime(3);not null"`
 }
 
 func (Variant) TableName() string { return "product_variants" }

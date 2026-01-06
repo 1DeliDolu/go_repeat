@@ -16,18 +16,28 @@ func (r *Repo) GetOrCreateUserCart(ctx context.Context, userID string) (Cart, er
 	if userID == "" {
 		return Cart{}, errors.New("userID cannot be empty")
 	}
+
 	var c Cart
 	err := r.db.WithContext(ctx).
-		Where("user_id = ?", userID).
+		Where("user_id = ? AND status = ?", userID, "open").
 		Attrs(Cart{
 			ID:     uuid.NewString(),
 			Status: "open",
 		}).
 		FirstOrCreate(&c).Error
+	if err != nil {
+		return Cart{}, err
+	}
 
-	// Set UserID after FirstOrCreate (needed for create case)
+	// Ensure cart belongs to user and is marked open
 	c.UserID = &userID
-	return c, err
+	if c.Status != "open" {
+		c.Status = "open"
+		if err := r.db.WithContext(ctx).Model(&c).Update("status", "open").Error; err != nil {
+			return Cart{}, err
+		}
+	}
+	return c, nil
 }
 
 func (r *Repo) GetCart(ctx context.Context, cartID string) (Cart, error) {

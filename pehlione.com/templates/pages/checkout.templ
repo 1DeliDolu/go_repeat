@@ -13,10 +13,11 @@ templ Checkout(
 	errs validation.FieldErrors,
 	pageErr string,
 	opts []view.ShippingOption,
+	payments []view.PaymentOption,
 	summary view.CheckoutSummary,
 	isAuthed bool,
 ) {
-	@layout.Base("Checkout", flash, CheckoutBody(csrf, form, errs, pageErr, opts, summary, isAuthed))
+	@layout.Base("Checkout", flash, CheckoutBody(csrf, form, errs, pageErr, opts, payments, summary, isAuthed))
 }
 
 templ CheckoutBody(
@@ -25,113 +26,199 @@ templ CheckoutBody(
 	errs validation.FieldErrors,
 	pageErr string,
 	opts []view.ShippingOption,
+	payments []view.PaymentOption,
 	summary view.CheckoutSummary,
 	isAuthed bool,
 ) {
-	<h1 class="text-2xl font-semibold mb-4">Checkout</h1>
+	<div class="mx-auto max-w-6xl px-4 py-8">
+		<h1 class="text-3xl font-semibold text-gray-900">Güvenli Checkout</h1>
+		<p class="mt-1 text-sm text-gray-500">Misafir veya kayıtlı kullanıcı olarak adresinizi doldurun, ödeme yöntemini seçin ve siparişinizi onaylayın.</p>
 
-	<div class="border rounded p-3 mb-4">
-		<div><strong>Ürün adedi:</strong> { itoa(summary.Items) }</div>
-		<div><strong>Ara toplam:</strong> { summary.Subtotal }</div>
-		<div><strong>Kargo:</strong> { summary.Shipping }</div>
-		<div class="mt-2"><strong>Toplam:</strong> { summary.Total }</div>
-	</div>
-
-	if pageErr != "" {
-		<div class="mb-4 p-3 border rounded">{ pageErr }</div>
-	}
-
-	<form method="post" action="/checkout" class="space-y-3">
-		<input type="hidden" name="csrf_token" value={ csrf }/>
-		<input type="hidden" name="idempotency_key" value={ form.IdemKey }/>
-
-		if !isAuthed {
-			<div>
-				<label class="block text-sm mb-1">Email</label>
-				<input class="w-full border p-2 rounded" name="email" value={ form.Email }/>
-				if errs != nil && errs["email"] != "" {
-					<div class="text-sm mt-1">{ errs["email"] }</div>
-				}
-			</div>
+		if pageErr != "" {
+			<div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{ pageErr }</div>
 		}
 
-		<div class="grid grid-cols-2 gap-2">
-			<div>
-				<label class="block text-sm mb-1">First name</label>
-				<input class="w-full border p-2 rounded" name="first_name" value={ form.FirstName }/>
-				if errs != nil && errs["first_name"] != "" {
-					<div class="text-sm mt-1">{ errs["first_name"] }</div>
-				}
-			</div>
-			<div>
-				<label class="block text-sm mb-1">Last name</label>
-				<input class="w-full border p-2 rounded" name="last_name" value={ form.LastName }/>
-				if errs != nil && errs["last_name"] != "" {
-					<div class="text-sm mt-1">{ errs["last_name"] }</div>
-				}
-			</div>
-		</div>
+		<div class="mt-8 grid gap-8 lg:grid-cols-[2fr_1fr]">
+			<form method="post" action="/checkout" class="space-y-8 rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+				<input type="hidden" name="csrf_token" value={ csrf }/>
+				<input type="hidden" name="idempotency_key" value={ form.IdemKey }/>
 
-		<div>
-			<label class="block text-sm mb-1">Address 1</label>
-			<input class="w-full border p-2 rounded" name="address1" value={ form.Address1 }/>
-			if errs != nil && errs["address1"] != "" {
-				<div class="text-sm mt-1">{ errs["address1"] }</div>
-			}
-		</div>
+				<section class="space-y-4">
+					<div>
+						<p class="text-xs font-semibold uppercase tracking-wide text-indigo-600">1. Müşteri Bilgileri</p>
+						<h2 class="text-xl font-semibold text-gray-900">İletişim & Adres</h2>
+					</div>
 
-		<div>
-			<label class="block text-sm mb-1">Address 2</label>
-			<input class="w-full border p-2 rounded" name="address2" value={ form.Address2 }/>
-		</div>
+					if !isAuthed {
+						<div>
+							<label class="mb-1 block text-sm font-medium text-gray-700">Email</label>
+							<input class="w-full rounded-lg border border-gray-200 px-3 py-2 focus:border-indigo-500 focus:outline-hidden" name="email" value={ form.Email } placeholder="ornek@mail.com"/>
+							if errs != nil && errs["email"] != "" {
+								<p class="mt-1 text-sm text-red-600">{ errs["email"] }</p>
+							}
+						</div>
+					} else {
+						<div class="rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-600">
+							Giriş yapıldı (<strong>{ view.HeaderCtxFrom(ctx).UserEmail }</strong>). Sipariş özeti bu adrese gönderilecek.
+						</div>
+					}
 
-		<div class="grid grid-cols-2 gap-2">
-			<div>
-				<label class="block text-sm mb-1">City</label>
-				<input class="w-full border p-2 rounded" name="city" value={ form.City }/>
-				if errs != nil && errs["city"] != "" {
-					<div class="text-sm mt-1">{ errs["city"] }</div>
-				}
-			</div>
-			<div>
-				<label class="block text-sm mb-1">Postal code</label>
-				<input class="w-full border p-2 rounded" name="postal_code" value={ form.PostalCode }/>
-				if errs != nil && errs["postal_code"] != "" {
-					<div class="text-sm mt-1">{ errs["postal_code"] }</div>
-				}
-			</div>
-		</div>
+					<div class="grid gap-4 sm:grid-cols-2">
+						<div>
+							<label class="mb-1 block text-sm font-medium text-gray-700">İsim</label>
+							<input class="w-full rounded-lg border border-gray-200 px-3 py-2 focus:border-indigo-500 focus:outline-hidden" name="first_name" value={ form.FirstName }/>
+							if errs != nil && errs["first_name"] != "" {
+								<p class="mt-1 text-sm text-red-600">{ errs["first_name"] }</p>
+							}
+						</div>
+						<div>
+							<label class="mb-1 block text-sm font-medium text-gray-700">Soyisim</label>
+							<input class="w-full rounded-lg border border-gray-200 px-3 py-2 focus:border-indigo-500 focus:outline-hidden" name="last_name" value={ form.LastName }/>
+							if errs != nil && errs["last_name"] != "" {
+								<p class="mt-1 text-sm text-red-600">{ errs["last_name"] }</p>
+							}
+						</div>
+					</div>
 
-		<div class="grid grid-cols-2 gap-2">
-			<div>
-				<label class="block text-sm mb-1">Country</label>
-				<input class="w-full border p-2 rounded" name="country" value={ form.Country } placeholder="TR"/>
-				if errs != nil && errs["country"] != "" {
-					<div class="text-sm mt-1">{ errs["country"] }</div>
-				}
-			</div>
-			<div>
-				<label class="block text-sm mb-1">Phone</label>
-				<input class="w-full border p-2 rounded" name="phone" value={ form.Phone }/>
-				if errs != nil && errs["phone"] != "" {
-					<div class="text-sm mt-1">{ errs["phone"] }</div>
-				}
-			</div>
-		</div>
+					<div>
+						<label class="mb-1 block text-sm font-medium text-gray-700">Adres</label>
+						<input class="w-full rounded-lg border border-gray-200 px-3 py-2 focus:border-indigo-500 focus:outline-hidden" name="address1" value={ form.Address1 } placeholder="Mahalle, cadde ve kapı no"/>
+						if errs != nil && errs["address1"] != "" {
+							<p class="mt-1 text-sm text-red-600">{ errs["address1"] }</p>
+						}
+					</div>
+					<div>
+						<label class="mb-1 block text-sm font-medium text-gray-700">Adres (opsiyonel)</label>
+						<input class="w-full rounded-lg border border-gray-200 px-3 py-2 focus:border-indigo-500 focus:outline-hidden" name="address2" value={ form.Address2 } placeholder="Daire, blok vb."/>
+					</div>
 
-		<div class="border rounded p-3">
-			<div class="font-semibold mb-2">Shipping</div>
-			for _, o := range opts {
-				<label class="block mb-2">
-					<input type="radio" name="shipping_method" value={ o.Code } checked={ form.ShippingMethod == o.Code }/>
-					<span class="ml-2">{ o.Label } — { o.Price }</span>
-				</label>
-			}
-			if errs != nil && errs["shipping_method"] != "" {
-				<div class="text-sm mt-1">{ errs["shipping_method"] }</div>
-			}
-		</div>
+					<div class="grid gap-4 sm:grid-cols-2">
+						<div>
+							<label class="mb-1 block text-sm font-medium text-gray-700">Şehir</label>
+							<input class="w-full rounded-lg border border-gray-200 px-3 py-2 focus:border-indigo-500 focus:outline-hidden" name="city" value={ form.City }/>
+							if errs != nil && errs["city"] != "" {
+								<p class="mt-1 text-sm text-red-600">{ errs["city"] }</p>
+							}
+						</div>
+						<div>
+							<label class="mb-1 block text-sm font-medium text-gray-700">Posta Kodu</label>
+							<input class="w-full rounded-lg border border-gray-200 px-3 py-2 focus:border-indigo-500 focus:outline-hidden" name="postal_code" value={ form.PostalCode }/>
+							if errs != nil && errs["postal_code"] != "" {
+								<p class="mt-1 text-sm text-red-600">{ errs["postal_code"] }</p>
+							}
+						</div>
+					</div>
 
-		<button class="px-4 py-2 border rounded" type="submit">Siparişi Oluştur</button>
-	</form>
+					<div class="grid gap-4 sm:grid-cols-2">
+						<div>
+							<label class="mb-1 block text-sm font-medium text-gray-700">Ülke</label>
+							<input class="w-full rounded-lg border border-gray-200 px-3 py-2 uppercase focus:border-indigo-500 focus:outline-hidden" name="country" value={ form.Country } placeholder="TR"/>
+							if errs != nil && errs["country"] != "" {
+								<p class="mt-1 text-sm text-red-600">{ errs["country"] }</p>
+							}
+						</div>
+						<div>
+							<label class="mb-1 block text-sm font-medium text-gray-700">Telefon</label>
+							<input class="w-full rounded-lg border border-gray-200 px-3 py-2 focus:border-indigo-500 focus:outline-hidden" name="phone" value={ form.Phone }/>
+							if errs != nil && errs["phone"] != "" {
+								<p class="mt-1 text-sm text-red-600">{ errs["phone"] }</p>
+							}
+						</div>
+					</div>
+				</section>
+
+				<section class="space-y-4">
+					<div>
+						<p class="text-xs font-semibold uppercase tracking-wide text-indigo-600">2. Teslimat</p>
+						<h2 class="text-xl font-semibold text-gray-900">Kargo Seçimi</h2>
+					</div>
+					<div class="space-y-3">
+						for _, o := range opts {
+							<label class="flex cursor-pointer items-center rounded-lg border px-4 py-3 text-sm font-medium shadow-sm transition hover:border-indigo-400 { if form.ShippingMethod == o.Code { `border-indigo-500 ring-1 ring-indigo-200 bg-indigo-50` } }">
+								<input type="radio" name="shipping_method" value={ o.Code } checked={ form.ShippingMethod == o.Code } class="size-4 text-indigo-600 focus:ring-indigo-500"/>
+								<div class="ml-3 grow">
+									<p class="text-gray-900">{ o.Label }</p>
+									<p class="text-xs text-gray-500">{ o.Price }</p>
+								</div>
+							</label>
+						}
+					</div>
+					if errs != nil && errs["shipping_method"] != "" {
+						<p class="text-sm text-red-600">{ errs["shipping_method"] }</p>
+					}
+				</section>
+
+				<section class="space-y-4">
+					<div>
+						<p class="text-xs font-semibold uppercase tracking-wide text-indigo-600">3. Ödeme</p>
+						<h2 class="text-xl font-semibold text-gray-900">Ödeme Yöntemi</h2>
+						<p class="text-sm text-gray-500">Kart, PayPal veya Klarna ile ödeme simüle edilir.</p>
+					</div>
+					<div class="space-y-3">
+						for _, p := range payments {
+							<label class="flex cursor-pointer items-center rounded-lg border px-4 py-3 text-sm transition hover:border-indigo-400 { if form.PaymentMethod == p.Code { `border-indigo-500 ring-1 ring-indigo-200 bg-indigo-50` } }">
+								<input type="radio" name="payment_method" value={ p.Code } checked={ form.PaymentMethod == p.Code } class="size-4 text-indigo-600 focus:ring-indigo-500"/>
+								<div class="ml-3">
+									<p class="font-medium text-gray-900">{ p.Label }</p>
+									<p class="text-xs text-gray-500">{ p.Description }</p>
+								</div>
+							</label>
+						}
+					</div>
+					if errs != nil && errs["payment_method"] != "" {
+						<p class="text-sm text-red-600">{ errs["payment_method"] }</p>
+					}
+				</section>
+
+				<section class="space-y-3 border-t pt-4">
+					<p class="text-sm text-gray-500">Siparişi onaylayarak satış koşullarını ve gizlilik politikasını kabul etmiş olursunuz.</p>
+					<div class="flex justify-end">
+						<button class="inline-flex items-center rounded-md bg-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500" type="submit">
+							Siparişi Onayla
+						</button>
+					</div>
+				</section>
+			</form>
+
+			<aside class="space-y-4">
+				<div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+					<div class="flex items-center justify-between">
+						<h2 class="text-lg font-semibold text-gray-900">Sipariş Özeti</h2>
+						<span class="text-sm text-gray-500">{ summary.Items } ürün</span>
+					</div>
+					if len(summary.Lines) == 0 {
+						<p class="mt-4 text-sm text-gray-500">Sepetiniz boş. <a href="/products" class="font-medium text-indigo-600 hover:text-indigo-500">Ürünleri keşfedin</a>.</p>
+					} else {
+						<ul class="mt-4 divide-y divide-gray-100">
+							for _, it := range summary.Lines {
+								<li class="flex items-start gap-3 py-3 text-sm text-gray-700">
+									<div class="flex-1">
+										<p class="font-medium text-gray-900">{ it.ProductName }</p>
+										<p class="text-xs text-gray-500">Adet: { it.Qty } • { it.UnitPrice }</p>
+									</div>
+									<p class="font-semibold text-gray-900">{ it.LineTotal }</p>
+								</li>
+							}
+						</ul>
+					}
+
+					<dl class="mt-4 space-y-2 text-sm text-gray-700">
+						<div class="flex items-center justify-between">
+							<dt>Ara Toplam</dt>
+							<dd class="font-medium text-gray-900">{ summary.Subtotal }</dd>
+						</div>
+						<div class="flex items-center justify-between">
+							<dt>Kargo</dt>
+							<dd class="font-medium text-gray-900">{ summary.Shipping }</dd>
+						</div>
+						<div class="flex items-center justify-between border-t border-gray-100 pt-2 text-base font-semibold text-gray-900">
+							<dt>Genel Toplam</dt>
+							<dd>{ summary.Total }</dd>
+						</div>
+					</dl>
+					<p class="mt-3 text-xs text-gray-500">Ödeme adımı simülasyon amaçlıdır; kart bilgileriniz istenmez.</p>
+				</div>
+			</aside>
+		</div>
+	</div>
 }

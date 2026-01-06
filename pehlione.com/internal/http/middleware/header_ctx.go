@@ -12,6 +12,7 @@ func BuildHeaderCtx(c *gin.Context) view.HeaderCtx {
 	h := view.HeaderCtx{
 		CSRFToken: GetCSRFToken(c),
 		CartQty:   GetCartBadgeQty(c),
+		Cart:      GetCartPreview(c),
 	}
 
 	u, ok := CurrentUser(c)

@@ -37,7 +37,6 @@ func (s *Service) BuildCartPageForUser(ctx context.Context, userID string) (view
 		return view.CartPage{}, errors.New("missing userID")
 	}
 
-	// Not: carts'ta status alanı yoksa WHERE c.status = 'open' kısmını kaldırın
 	const q = `
 SELECT
   ci.variant_id AS variant_id,
@@ -47,11 +46,16 @@ SELECT
   p.name        AS product_name,
   p.slug        AS product_slug,
   '' AS image_url
-FROM carts c
-JOIN cart_items ci ON ci.cart_id = c.id
+FROM cart_items ci
 JOIN product_variants v ON v.id = ci.variant_id
 JOIN products p ON p.id = v.product_id
-WHERE c.user_id = ?
+WHERE ci.cart_id = (
+  SELECT c.id
+  FROM carts c
+  WHERE c.user_id = ? AND c.status = 'open'
+  ORDER BY c.updated_at DESC
+  LIMIT 1
+)
 ORDER BY ci.created_at ASC;
 `
 
@@ -87,23 +91,19 @@ func (s *Service) BuildCartPageFromCookie(ctx context.Context, c *cartcookie.Car
 	// IN sorgusu deterministik olsun diye sırala
 	sort.Strings(ids)
 
-	// Cookie'de qty var; DB'den sadece ürün/variant bilgisi çekeceğiz.
-	const q = `
-SELECT
-  v.id          AS variant_id,
-  0             AS qty,
-  v.price_cents AS price_cents,
-  v.currency    AS currency,
-  p.name        AS product_name,
-  p.slug        AS product_slug,
-  '' AS image_url
-FROM product_variants v
-JOIN products p ON p.id = v.product_id
-WHERE v.id IN ?;
-`
-
 	var rows []cartRow
-	if err := s.db.WithContext(ctx).Raw(q, ids).Scan(&rows).Error; err != nil {
+	if err := s.db.WithContext(ctx).
+		Table("product_variants AS v").
+		Select(`v.id AS variant_id,
+			0 AS qty,
+			v.price_cents AS price_cents,
+			v.currency AS currency,
+			p.name AS product_name,
+			p.slug AS product_slug,
+			'' AS image_url`).
+		Joins("JOIN products p ON p.id = v.product_id").
+		Where("v.id IN ?", ids).
+		Scan(&rows).Error; err != nil {
 		return view.CartPage{}, err
 	}
 
