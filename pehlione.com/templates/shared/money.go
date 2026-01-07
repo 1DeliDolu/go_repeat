@@ -16,3 +16,8 @@ func FormatMoney(currency string, cents int64) string {
 		return fmt.Sprintf("%.2f %s", major, currency)
 	}
 }
+
+// IntToString converts an integer to string for template use.
+func IntToString(i int) string {
+	return fmt.Sprintf("%d", i)
+}

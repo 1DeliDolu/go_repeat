@@ -146,7 +146,7 @@ func Header() templ.Component {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<div class=\"flow-root\"><a href=\"/account/orders\" class=\"-m-2 block p-2 font-medium text-gray-900\">My account</a></div><div class=\"flow-root\"><form method=\"post\" action=\"/logout\"><input type=\"hidden\" name=\"csrf_token\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<div class=\"flow-root\"><a href=\"/account\" class=\"-m-2 block p-2 font-medium text-gray-900\">My account</a></div><div class=\"flow-root\"><form method=\"post\" action=\"/logout\"><input type=\"hidden\" name=\"csrf_token\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -256,7 +256,7 @@ func Header() templ.Component {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<a href=\"/account/orders\" class=\"text-sm font-medium text-gray-700 hover:text-gray-800\">My account</a> <span aria-hidden=\"true\" class=\"h-6 w-px bg-gray-200\"></span><form method=\"post\" action=\"/logout\" class=\"inline\"><input type=\"hidden\" name=\"csrf_token\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<a href=\"/account\" class=\"text-sm font-medium text-gray-700 hover:text-gray-800\">My account</a> <span aria-hidden=\"true\" class=\"h-6 w-px bg-gray-200\"></span><form method=\"post\" action=\"/logout\" class=\"inline\"><input type=\"hidden\" name=\"csrf_token\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

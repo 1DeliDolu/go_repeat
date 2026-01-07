@@ -3,10 +3,8 @@ package handlers
 import (
 	"net/http"
 	"strconv"
-	
 
 	"github.com/gin-gonic/gin"
-	
 
 	"pehlione.com/app/internal/http/flash"
 	"pehlione.com/app/internal/http/middleware"
@@ -53,7 +51,7 @@ func (h *AccountOrdersHandler) buildPage(c *gin.Context, user auth.User, page, p
 			Number:     orderNum,
 			CreatedAt:  item.Order.CreatedAt,
 			Status:     item.Order.Status,
-			TotalCents: item.Order.TotalCents,
+			TotalCents: int64(item.Order.TotalCents),
 			Currency:   item.Order.Currency,
 			ItemCount:  item.Count,
 			PaidAt:     item.Order.PaidAt,

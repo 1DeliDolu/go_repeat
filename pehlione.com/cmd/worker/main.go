@@ -115,21 +115,37 @@ func main() {
 	}
 
 	if cfg.Currency.FX.Provider != "" {
-		var rateProvider fx.Provider
-		switch cfg.Currency.FX.Provider {
-		case "exchange_rate_host", "exchangerate_host":
-			rateProvider = fx.NewExchangeRateHostProvider(cfg.Currency.FX.Symbols)
-		default:
-			log.Printf("worker: unsupported FX provider %s", cfg.Currency.FX.Provider)
+		// Use configured symbols, fallback to display currencies if not configured
+		symbols := cfg.Currency.FX.Symbols
+		if len(symbols) == 0 {
+			// Use display currencies except the base currency
+			for _, curr := range cfg.Currency.DisplayCurrencies {
+				if curr != cfg.Currency.BaseCurrency {
+					symbols = append(symbols, curr)
+				}
+			}
 		}
-		if rateProvider != nil {
-			started++
-			interval := time.Duration(cfg.Currency.FX.RefreshMinutes) * time.Minute
-			fxWorker := fx.NewWorker(fxSvc, rateProvider, cfg.Currency.BaseCurrency, cfg.Currency.FX.Symbols, interval)
-			log.Println("fx worker starting")
-			go func() {
-				errCh <- fxWorker.Run(ctx)
-			}()
+
+		// Only start FX worker if there are symbols to fetch
+		if len(symbols) > 0 {
+			var rateProvider fx.Provider
+			switch cfg.Currency.FX.Provider {
+			case "exchange_rate_host", "exchangerate_host":
+				rateProvider = fx.NewExchangeRateHostProvider(symbols)
+			default:
+				log.Printf("worker: unsupported FX provider %s", cfg.Currency.FX.Provider)
+			}
+			if rateProvider != nil {
+				started++
+				interval := time.Duration(cfg.Currency.FX.RefreshMinutes) * time.Minute
+				fxWorker := fx.NewWorker(fxSvc, rateProvider, cfg.Currency.BaseCurrency, symbols, interval)
+				log.Println("fx worker starting")
+				go func() {
+					errCh <- fxWorker.Run(ctx)
+				}()
+			}
+		} else {
+			log.Println("worker: FX provider configured but no currencies to fetch (single currency mode)")
 		}
 	}
 

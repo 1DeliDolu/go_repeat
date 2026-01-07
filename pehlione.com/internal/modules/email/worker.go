@@ -51,9 +51,11 @@ func (w *Worker) Run(ctx context.Context) error {
 func (w *Worker) tick(ctx context.Context) error {
 	batch, err := w.svc.LockBatch(ctx, w.workerID, w.batchSize)
 	if err != nil {
+		log.Printf("Email worker %s: lock batch error: %v", w.workerID, err)
 		return err
 	}
 	if len(batch) == 0 {
+		// Silently return - no messages to process
 		return nil
 	}
 
@@ -111,13 +113,14 @@ func (w *Worker) processOne(ctx context.Context, job OutboxEmail) {
 	})
 
 	if sendErr == nil {
+		log.Printf("Email worker %s: successfully sent %d to %s", w.workerID, job.ID, job.ToEmail)
 		if err := w.svc.MarkSent(ctx, job.ID); err != nil {
 			log.Printf("Email worker %s: mark sent failed for %d: %v", w.workerID, job.ID, err)
 		}
 		return
 	}
 
-	log.Printf("Email worker %s: send failed for %d: %v", w.workerID, job.ID, sendErr)
+	log.Printf("Email worker %s: send failed for %d to %s: %v (attempt %d/%d)", w.workerID, job.ID, job.ToEmail, sendErr, attemptNum, maxSendAttempts)
 	errMsg := truncateStr(sendErr.Error(), 255)
 	if attemptNum >= maxSendAttempts {
 		if err := w.svc.MarkFailed(ctx, job.ID, errMsg); err != nil {

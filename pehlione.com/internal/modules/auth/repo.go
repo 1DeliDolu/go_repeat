@@ -75,3 +75,11 @@ func (r *Repo) GetByID(ctx context.Context, id string) (*User, error) {
 func (r *Repo) UpdatePassword(ctx context.Context, userID string, passwordHash string) error {
 	return r.db.WithContext(ctx).Model(&User{}).Where("id = ?", userID).Update("password_hash", passwordHash).Error
 }
+
+// UpdateUser updates a user's profile information.
+func (r *Repo) UpdateUser(ctx context.Context, user *User) error {
+	if user.Email != "" {
+		user.Email = normEmail(user.Email)
+	}
+	return r.db.WithContext(ctx).Model(user).Updates(user).Error
+}

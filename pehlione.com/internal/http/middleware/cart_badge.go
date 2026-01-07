@@ -91,34 +91,6 @@ func GetCartPreview(c *gin.Context) view.CartPage {
 	return page
 }
 
-// DB schema varsayımı (minimum):
-// carts: id, user_id, updated_at
-// cart_items: cart_id, quantity
-//
-// Tek SQL sorgusu: subquery ile en güncel cart'ı bul, qty'sini topla.
-// Open cart yoksa COALESCE ile 0 döner.
-// Performans: 2 query yerine 1 query → SSR header'da önemli.
-func cartQtyFromDB(ctx context.Context, db *gorm.DB, userID string) (int, error) {
-	const q = `SELECT COALESCE(SUM(ci.quantity), 0) AS qty
-FROM cart_items ci
-WHERE ci.cart_id = (
-  SELECT c.id
-  FROM carts c
-  WHERE c.user_id = ? AND c.status = 'open'
-  ORDER BY c.updated_at DESC
-  LIMIT 1
-);`
-
-	var sum int64
-	if err := db.WithContext(ctx).Raw(q, userID).Scan(&sum).Error; err != nil {
-		return 0, err
-	}
-	if sum < 0 {
-		sum = 0
-	}
-	return int(sum), nil
-}
-
 // Session cache helpers
 // Note: Using gin.Context local storage for request-scoped cache.
 // This avoids persisting to DB and keeps session lightweight.

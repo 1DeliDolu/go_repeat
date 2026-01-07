@@ -13,6 +13,9 @@ type User struct {
 	PhoneVerifiedAt *time.Time `gorm:"type:datetime"`
 	SMSOptIn        bool       `gorm:"type:tinyint(1);not null;default:0"`
 	SMSOptOutAt     *time.Time `gorm:"type:datetime"`
+	FirstName       *string    `gorm:"type:varchar(255)"`
+	LastName        *string    `gorm:"type:varchar(255)"`
+	Address         *string    `gorm:"type:text"`
 	CreatedAt       time.Time  `gorm:"type:datetime(3);not null"`
 	UpdatedAt       time.Time  `gorm:"type:datetime(3);not null"`
 }

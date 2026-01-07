@@ -9,7 +9,7 @@ type AccountOrderListItem struct {
 	Number     string
 	CreatedAt  time.Time
 	Status     string
-	TotalCents int
+	TotalCents int64
 	Currency   string
 	ItemCount  int
 	PaidAt     *time.Time

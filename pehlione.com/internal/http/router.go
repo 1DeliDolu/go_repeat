@@ -34,7 +34,6 @@ import (
 	"pehlione.com/app/internal/sms"
 	"pehlione.com/app/internal/storage"
 	"pehlione.com/app/pkg/view"
-	
 )
 
 func NewRouter(logger *slog.Logger, db *gorm.DB, cfg config.AppConfig) *gin.Engine {
@@ -227,13 +226,17 @@ func NewRouter(logger *slog.Logger, db *gorm.DB, cfg config.AppConfig) *gin.Engi
 	authOnly.Use(middleware.RequireAuth(flashCodec))
 
 	authRepo := auth.NewRepo(db)
-	accountH := handlers.NewAccountHandler(authRepo, flashCodec)
+	ordersRepo := orders.NewRepo(db)
+	accountH := handlers.NewAccountHandler(authRepo, flashCodec, wishlistSvc, productsRepo, ordersRepo)
 	authOnly.GET("/account", accountH.Get)
 	authOnly.POST("/account/password", accountH.ChangePassword)
 
+	// Account Edit routes
+	accountEditH := handlers.NewAccountEditHandler(authRepo, flashCodec)
+	authOnly.GET("/account/edit", accountEditH.Get)
+	authOnly.POST("/account/edit", accountEditH.Post)
 
 	// Account routes
-	ordersRepo := orders.NewRepo(db)
 	accountOrdersH := handlers.NewAccountOrdersHandler(ordersRepo, authRepo, flashCodec)
 	account := r.Group("/account")
 	account.Use(middleware.RequireAuth(flashCodec))
@@ -241,6 +244,20 @@ func NewRouter(logger *slog.Logger, db *gorm.DB, cfg config.AppConfig) *gin.Engi
 
 	smsRepo := sms.NewOutboxRepository(db)
 	smsH := handlers.NewSmsHandler(db, smsRepo, flashCodec, logger)
+
+	// Set up SMS verification service if SMS provider is available
+	if cfg.SMS.Enabled && cfg.SMS.Provider != "" {
+		var smsProvider sms.SMSProvider
+		switch cfg.SMS.Provider {
+		case "mock":
+			smsProvider = sms.NewMockProvider(logger)
+		default:
+			log.Fatalf("router: unsupported sms provider %s", cfg.SMS.Provider)
+		}
+		smsSvc := sms.NewVerificationService(db, smsProvider)
+		smsH.SetVerificationService(smsSvc)
+	}
+
 	account.POST("/sms", smsH.PostAccountSMS)
 	account.POST("/sms/verify", smsH.PostAccountSMSVerify)
 	account.POST("/sms/send-code", smsH.PostSendCode)
@@ -251,6 +268,7 @@ func NewRouter(logger *slog.Logger, db *gorm.DB, cfg config.AppConfig) *gin.Engi
 	authOnly.POST("/wishlist/items/remove", wishlistH.Remove)
 
 	// --- Email worker initialization ---
+	var verifyService *users.VerifyService
 	if cfg.Email.Enabled {
 		emailSvc = email.NewService(db)
 
@@ -274,11 +292,28 @@ func NewRouter(logger *slog.Logger, db *gorm.DB, cfg config.AppConfig) *gin.Engi
 			}
 		}()
 
-		verifyService := users.NewVerifyService(db, emailSvc, appBaseURL, cfg.Email.FromName)
+		verifyService = users.NewVerifyService(db, emailSvc, appBaseURL, cfg.Email.FromName)
 		authH.SetVerifyService(verifyService)
 		log.Printf("Email worker: verification service configured with base URL %s", appBaseURL)
 	} else {
 		log.Printf("Email worker: disabled via config")
+	}
+
+	// Account Verify Email route
+	if verifyService != nil {
+		accountVerifyEmailH := handlers.NewAccountVerifyEmailHandler(verifyService, flashCodec)
+		authOnly.POST("/account/verify-email-send", accountVerifyEmailH.SendVerificationEmail)
+	}
+
+	// Password Change routes
+	var passwordChangeSvc *users.PasswordChangeService
+	if cfg.Email.Enabled && verifyService != nil {
+		passwordChangeSvc = users.NewPasswordChangeService(db, emailSvc, appBaseURL, cfg.Email.FromName)
+		accountH.SetPasswordChangeService(passwordChangeSvc)
+
+		passwordConfirmH := handlers.NewPasswordChangeConfirmHandler(authRepo, passwordChangeSvc, flashCodec)
+		r.GET("/confirm-password-change", passwordConfirmH.ConfirmPasswordChange)
+		r.GET("/cancel-password-change", passwordConfirmH.CancelPasswordChange)
 	}
 
 	var shippingSvc *shipping.Service
@@ -303,25 +338,8 @@ func NewRouter(logger *slog.Logger, db *gorm.DB, cfg config.AppConfig) *gin.Engi
 		log.Printf("Shipping worker: disabled via config")
 	}
 
-	if cfg.Currency.FX.Provider != "" {
-		var rateProvider fx.Provider
-		switch cfg.Currency.FX.Provider {
-		case "exchange_rate_host", "exchangerate_host":
-			rateProvider = fx.NewExchangeRateHostProvider(cfg.Currency.FX.Symbols)
-		default:
-			log.Printf("FX worker: unsupported provider %s", cfg.Currency.FX.Provider)
-		}
-		if rateProvider != nil {
-			interval := time.Duration(cfg.Currency.FX.RefreshMinutes) * time.Minute
-			fxWorker := fx.NewWorker(fxSvc, rateProvider, cfg.Currency.BaseCurrency, cfg.Currency.FX.Symbols, interval)
-			go func() {
-				log.Printf("FX worker: starting provider=%s interval=%s", rateProvider.Name(), interval)
-				if err := fxWorker.Run(context.Background()); err != nil {
-					log.Printf("FX worker stopped: %v", err)
-				}
-			}()
-		}
-	}
+	// Note: FX worker is started in cmd/worker/main.go, not in the web server
+	// The web server should not run background workers to avoid redundant processing
 
 	// Admin Orders (depends on email/shipping services)
 	refundSvc := payments.NewRefundService(db, provider, emailSvc, appBaseURL)
