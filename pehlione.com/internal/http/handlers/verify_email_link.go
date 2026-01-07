@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"crypto/sha256"
-	"encoding/hex"
 	"net/http"
 	"time"
 
@@ -26,11 +25,10 @@ func (h *VerifyEmailHandler) Get(c *gin.Context) {
 	}
 
 	sum := sha256.Sum256([]byte(token))
-	hashHex := hex.EncodeToString(sum[:])
 
 	err := h.db.WithContext(c.Request.Context()).Transaction(func(tx *gorm.DB) error {
 		var ev struct {
-			ID        int64
+			ID        string
 			UserID    string
 			ExpiresAt time.Time
 			UsedAt    *time.Time
@@ -38,13 +36,13 @@ func (h *VerifyEmailHandler) Get(c *gin.Context) {
 		if err := tx.Raw(`
 			SELECT id, user_id, expires_at, used_at
 			FROM email_verifications
-			WHERE token_hash = ?
+			WHERE code_hash = ?
 			LIMIT 1
 			FOR UPDATE
-		`, hashHex).Scan(&ev).Error; err != nil {
+		`, sum[:]).Scan(&ev).Error; err != nil {
 			return err
 		}
-		if ev.ID == 0 || ev.UsedAt != nil || time.Now().After(ev.ExpiresAt) {
+		if ev.ID == "" || ev.UsedAt != nil || time.Now().After(ev.ExpiresAt) {
 			return gorm.ErrRecordNotFound
 		}
 

@@ -62,7 +62,7 @@ func WishlistPage(vm WishlistVM) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"bg-white\"><div class=\"mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8\"><div class=\"flex items-center justify-between\"><div><p class=\"text-xs font-semibold uppercase tracking-[0.3em] text-indigo-600\">pehliONE</p><h1 class=\"mt-2 text-3xl font-bold text-gray-900\">Wishlist</h1><p class=\"mt-1 text-sm text-gray-500\">Products you saved for later.</p></div><a href=\"/products\" class=\"rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50\">Browse products</a></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"bg-white\"><div class=\"mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8\"><div class=\"flex items-center justify-between\"><div><p class=\"text-xs font-semibold uppercase tracking-[0.3em] text-indigo-600\">PehliONE</p><h1 class=\"mt-2 text-3xl font-bold text-gray-900\">Wishlist</h1><p class=\"mt-1 text-sm text-gray-500\">Products you saved for later.</p></div><a href=\"/products\" class=\"rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50\">Browse products</a></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

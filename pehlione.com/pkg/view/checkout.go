@@ -17,25 +17,36 @@ type CheckoutForm struct {
 	Country    string
 	Phone      string
 
+	// Billing address fields
+	UseBillingAddress bool
+	BillingFirstName  string
+	BillingLastName   string
+	BillingAddress1   string
+	BillingAddress2   string
+	BillingCity       string
+	BillingPostalCode string
+	BillingCountry    string
+	BillingPhone      string
+
 	ShippingMethod string
 	PaymentMethod  string
 	IdemKey        string
 }
 
 type CheckoutSummary struct {
-	Currency          string
-	BaseCurrency      string
-	Subtotal          string
-	Shipping          string
-	Total             string
-	Items             int
-	Lines             []CartItem
-	SubtotalCents     int
-	ShippingCents     int
-	TotalCents        int
-	BaseSubtotalCents int
-	BaseShippingCents int
-	BaseTotalCents    int
+	Currency             string
+	BaseCurrency         string
+	Subtotal             string
+	Shipping             string
+	Total                string
+	Items                int
+	Lines                []CartItem
+	SubtotalCents        int
+	ShippingCents        int
+	TotalCents           int
+	BaseSubtotalCents    int
+	BaseShippingCents    int
+	BaseTotalCents       int
 	DisplaySubtotalCents int
 	DisplayShippingCents int
 	DisplayTotalCents    int

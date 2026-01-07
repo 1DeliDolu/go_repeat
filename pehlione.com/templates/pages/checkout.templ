@@ -45,6 +45,22 @@ templ CheckoutBody(
 				<input type="hidden" name="csrf_token" value={ csrf }/>
 				<input type="hidden" name="idempotency_key" value={ form.IdemKey }/>
 
+				<script>
+					document.addEventListener('DOMContentLoaded', function() {
+						const checkbox = document.getElementById('use_billing_address');
+						const billingSection = document.getElementById('billing_address_section');
+						function toggleBillingSection() {
+							if (checkbox.checked) {
+								billingSection.style.display = 'block';
+							} else {
+								billingSection.style.display = 'none';
+							}
+						}
+						checkbox.addEventListener('change', toggleBillingSection);
+						toggleBillingSection();
+					});
+				</script>
+
 				<section class="space-y-4">
 					<div>
 						<p class="text-xs font-semibold uppercase tracking-wide text-indigo-600">1. Customer information</p>
@@ -127,6 +143,13 @@ templ CheckoutBody(
 								<p class="mt-1 text-sm text-red-600">{ errs["phone"] }</p>
 							}
 						</div>
+					</div>
+				</section>
+
+				<section class="space-y-4 border-t pt-4">
+					<div class="flex items-center gap-2">
+						<input type="checkbox" id="use_billing_address" name="use_billing_address" value="on" checked={ form.UseBillingAddress } class="size-4 text-indigo-600 focus:ring-indigo-500"/>
+						<label for="use_billing_address" class="text-sm font-medium text-gray-700">Different billing address</label>
 					</div>
 				</section>
 

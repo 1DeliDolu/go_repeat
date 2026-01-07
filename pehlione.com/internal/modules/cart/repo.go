@@ -3,6 +3,7 @@ package cart
 import (
 	"context"
 	"errors"
+	"log"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -22,6 +23,7 @@ func (r *Repo) GetOrCreateUserCart(ctx context.Context, userID string) (Cart, er
 		Where("user_id = ? AND status = ?", userID, "open").
 		Attrs(Cart{
 			ID:     uuid.NewString(),
+			UserID: &userID, // CRITICAL: Set user_id when creating new cart
 			Status: "open",
 		}).
 		FirstOrCreate(&c).Error
@@ -30,13 +32,19 @@ func (r *Repo) GetOrCreateUserCart(ctx context.Context, userID string) (Cart, er
 	}
 
 	// Ensure cart belongs to user and is marked open
-	c.UserID = &userID
+	if c.UserID == nil || *c.UserID != userID {
+		c.UserID = &userID
+		if err := r.db.WithContext(ctx).Model(&c).Update("user_id", userID).Error; err != nil {
+			return Cart{}, err
+		}
+	}
 	if c.Status != "open" {
 		c.Status = "open"
 		if err := r.db.WithContext(ctx).Model(&c).Update("status", "open").Error; err != nil {
 			return Cart{}, err
 		}
 	}
+	log.Printf("GetOrCreateUserCart: user=%s, cart=%s (status=%s)", userID, c.ID, c.Status)
 	return c, nil
 }
 

@@ -50,22 +50,25 @@ func (h *CartHandler) Add(c *gin.Context) {
 	// Check if user is logged in
 	if u, ok := middleware.CurrentUser(c); ok && u.ID != "" {
 		// Logged-in user: add to DB cart
+		log.Printf("CartAdd: authenticated user %s adding variant_id=%s qty=%d", u.ID, variantID, qty)
 		cartRepo := cart.NewRepo(h.DB)
 
 		// Get or create user's cart
-		userCart, err := cartRepo.GetOrCreateUserCart(c, u.ID)
+		userCart, err := cartRepo.GetOrCreateUserCart(c.Request.Context(), u.ID)
 		if err != nil {
-			log.Printf("CartAdd: error getting cart: %v", err)
+			log.Printf("CartAdd: error getting cart for user %s: %v", u.ID, err)
 			render.RedirectWithFlash(c, h.Flash, "/products", view.FlashError, "Sepete ekleme başarısız.")
 			return
 		}
+		log.Printf("CartAdd: user cart ID=%s", userCart.ID)
 
 		// Add item to cart
-		if err := cartRepo.AddItem(c, userCart.ID, variantID, qty); err != nil {
-			log.Printf("CartAdd: error adding item: %v", err)
+		if err := cartRepo.AddItem(c.Request.Context(), userCart.ID, variantID, qty); err != nil {
+			log.Printf("CartAdd: error adding item variant_id=%s to cart %s: %v", variantID, userCart.ID, err)
 			render.RedirectWithFlash(c, h.Flash, "/products", view.FlashError, "Sepete ekleme başarısız.")
 			return
 		}
+		log.Printf("CartAdd: successfully added variant_id=%s qty=%d to user %s cart", variantID, qty, u.ID)
 
 		// Clear cache
 		middleware.ClearSessionCartCache(c)
@@ -75,12 +78,18 @@ func (h *CartHandler) Add(c *gin.Context) {
 	}
 
 	// Guest user: add to cookie cart
-	cc, _ := h.CK.Get(c)
-	if cc == nil {
-		cc = &cartcookie.Cart{}
+	cc, err := h.CK.Get(c)
+	if err != nil {
+		log.Printf("CartAdd guest: error getting cookie: %v", err)
 	}
+	if cc == nil {
+		cc = cartcookie.NewCart()
+	}
+	log.Printf("CartAdd guest: before AddItem, cart has %d items", len(cc.Items))
 	cc.AddItem(variantID, qty)
+	log.Printf("CartAdd guest: after AddItem, cart has %d items", len(cc.Items))
 	h.CK.Set(c, cc)
+	log.Printf("CartAdd guest: cookie set for variant_id=%s qty=%d", variantID, qty)
 
 	render.RedirectWithFlash(c, h.Flash, "/cart", view.FlashSuccess, "✓ Sepete eklendi.")
 }
@@ -125,7 +134,7 @@ func (h *CartHandler) Update(c *gin.Context) {
 
 	cc, _ := h.CK.Get(c)
 	if cc == nil {
-		cc = &cartcookie.Cart{}
+		cc = cartcookie.NewCart()
 	}
 	cc.UpdateQuantity(variantID, qty)
 	h.CK.Set(c, cc)
@@ -162,7 +171,7 @@ func (h *CartHandler) Remove(c *gin.Context) {
 
 	cc, _ := h.CK.Get(c)
 	if cc == nil {
-		cc = &cartcookie.Cart{}
+		cc = cartcookie.NewCart()
 	}
 	cc.RemoveItem(variantID)
 	h.CK.Set(c, cc)
@@ -179,21 +188,34 @@ func (h *CartHandler) Get(c *gin.Context) {
 	}
 
 	// Check if user is logged in
-	if u, ok := middleware.CurrentUser(c); ok {
+	if u, ok := middleware.CurrentUser(c); ok && u.ID != "" {
 		// Logged-in user: fetch from DB
+		log.Printf("CartGet: authenticated user %s, fetching DB cart", u.ID)
 		cartPage, err := svc.BuildCartPageForUser(c.Request.Context(), u.ID, displayCurrency)
 		if err != nil {
-			log.Printf("CartGet: error building page: %v", err)
+			log.Printf("CartGet: error building page for user %s: %v", u.ID, err)
 			render.Component(c, http.StatusOK, pages.Cart(flash, view.CartPage{Items: []view.CartItem{}}))
 			return
 		}
+		log.Printf("CartGet: user %s has %d items in cart", u.ID, len(cartPage.Items))
 		cartPage.CSRFToken = csrfTokenFrom(c)
 		render.Component(c, http.StatusOK, pages.Cart(flash, cartPage))
 		return
 	}
+	log.Printf("CartGet: user not authenticated, using guest cookie")
 
 	// Guest user: fetch from cookie
-	cc, _ := h.CK.Get(c)
+	cc, err := h.CK.Get(c)
+	if err != nil {
+		log.Printf("CartGet: error getting cookie: %v", err)
+	}
+	if cc == nil {
+		cc = cartcookie.NewCart()
+	}
+	log.Printf("CartGet: guest cart has %d items", len(cc.Items))
+	for _, item := range cc.Items {
+		log.Printf("  - variant_id=%s qty=%d", item.VariantID, item.Qty)
+	}
 	cartPage, err := svc.BuildCartPageFromCookie(c.Request.Context(), cc, displayCurrency)
 	if err != nil {
 		log.Printf("CartGet: error building guest cart: %v", err)

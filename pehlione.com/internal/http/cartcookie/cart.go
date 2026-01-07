@@ -13,6 +13,10 @@ type Cart struct {
 	Items []Item `json:"items"`
 }
 
+func NewCart() *Cart {
+	return &Cart{Items: []Item{}}
+}
+
 // AddItem ekler veya quantity'yi artırır
 func (c *Cart) AddItem(variantID string, qty int) {
 	if c == nil || qty < 1 {
@@ -63,7 +67,10 @@ func (c *Cart) RemoveItem(variantID string) {
 // ToJSON serializes cart
 func (c *Cart) ToJSON() string {
 	if c == nil {
-		c = &Cart{}
+		c = NewCart()
+	}
+	if c.Items == nil {
+		c.Items = []Item{}
 	}
 	b, _ := json.Marshal(c)
 	return string(b)
@@ -73,7 +80,10 @@ func (c *Cart) ToJSON() string {
 func FromJSON(s string) *Cart {
 	var c Cart
 	if err := json.Unmarshal([]byte(s), &c); err != nil {
-		return &Cart{}
+		return NewCart()
+	}
+	if c.Items == nil {
+		c.Items = []Item{}
 	}
 	return &c
 }

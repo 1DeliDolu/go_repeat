@@ -3,8 +3,10 @@ package cart
 import (
 	"context"
 	"errors"
+	"log"
 	"math"
 	"sort"
+	"strings"
 
 	"gorm.io/gorm"
 
@@ -40,6 +42,19 @@ func (s *Service) BuildCartPageForUser(ctx context.Context, userID string, displ
 		return view.CartPage{}, errors.New("missing userID")
 	}
 
+	// First, find the user's open cart
+	var cartID string
+	err := s.db.WithContext(ctx).
+		Model(&Cart{}).
+		Where("user_id = ? AND status = ?", userID, "open").
+		Order("updated_at DESC").
+		Limit(1).
+		Pluck("id", &cartID).Error
+	if err != nil {
+		return view.CartPage{}, err
+	}
+	log.Printf("BuildCartPageForUser: user=%s, cartID=%s", userID, cartID)
+
 	const q = `
 SELECT
   ci.variant_id AS variant_id,
@@ -52,20 +67,15 @@ SELECT
 FROM cart_items ci
 JOIN product_variants v ON v.id = ci.variant_id
 JOIN products p ON p.id = v.product_id
-WHERE ci.cart_id = (
-  SELECT c.id
-  FROM carts c
-  WHERE c.user_id = ? AND c.status = 'open'
-  ORDER BY c.updated_at DESC
-  LIMIT 1
-)
+WHERE ci.cart_id = ?
 ORDER BY ci.created_at ASC;
 `
 
 	var rows []cartRow
-	if err := s.db.WithContext(ctx).Raw(q, userID).Scan(&rows).Error; err != nil {
+	if err := s.db.WithContext(ctx).Raw(q, cartID).Scan(&rows).Error; err != nil {
 		return view.CartPage{}, err
 	}
+	log.Printf("BuildCartPageForUser: found %d items in cart %s", len(rows), cartID)
 
 	return s.buildCartVMFromRows(ctx, rows, displayCurrency)
 }
@@ -137,17 +147,34 @@ func (s *Service) BuildCartPageFromCookie(ctx context.Context, c *cartcookie.Car
 func (s *Service) buildCartVMFromRows(ctx context.Context, rows []cartRow, displayCurrency string) (view.CartPage, error) {
 	vm := view.CartPage{Items: make([]view.CartItem, 0, len(rows))}
 
-	baseCurrency := s.baseCurrency()
-	if baseCurrency == "" && len(rows) > 0 {
-		baseCurrency = rows[0].Currency
+	itemCurrency := ""
+	for _, r := range rows {
+		if r.Currency != "" {
+			itemCurrency = strings.ToUpper(strings.TrimSpace(r.Currency))
+			break
+		}
 	}
-	displayCurrency = s.normalizeDisplayCurrency(ctx, displayCurrency)
+	if itemCurrency == "" {
+		itemCurrency = strings.ToUpper(strings.TrimSpace(s.baseCurrency()))
+	}
 
+	displayCurrency = strings.ToUpper(strings.TrimSpace(displayCurrency))
 	rate := 1.0
 	if s.currency != nil {
-		if rateInfo, err := s.currency.DisplayRate(ctx, displayCurrency); err == nil && rateInfo.Rate > 0 {
-			rate = rateInfo.Rate
+		base := strings.ToUpper(strings.TrimSpace(s.currency.BaseCurrency()))
+		if itemCurrency != "" && base != "" && strings.EqualFold(itemCurrency, base) {
+			displayCurrency = s.normalizeDisplayCurrency(ctx, displayCurrency)
+			if rateInfo, err := s.currency.DisplayRate(ctx, displayCurrency); err == nil && rateInfo.Rate > 0 {
+				rate = rateInfo.Rate
+			}
+		} else {
+			// Avoid incorrect FX conversions when cart items are not in base currency.
+			displayCurrency = itemCurrency
+			rate = 1.0
 		}
+	}
+	if displayCurrency == "" {
+		displayCurrency = itemCurrency
 	}
 
 	subtotalBase := 0
@@ -158,9 +185,9 @@ func (s *Service) buildCartVMFromRows(ctx context.Context, rows []cartRow, displ
 		if r.Qty <= 0 {
 			continue
 		}
-		if baseCurrency == "" {
-			baseCurrency = r.Currency
-		} else if r.Currency != "" && r.Currency != baseCurrency {
+		if itemCurrency == "" {
+			itemCurrency = strings.ToUpper(strings.TrimSpace(r.Currency))
+		} else if r.Currency != "" && !strings.EqualFold(r.Currency, itemCurrency) {
 			return view.CartPage{}, ErrMixedCurrency
 		}
 
@@ -190,7 +217,7 @@ func (s *Service) buildCartVMFromRows(ctx context.Context, rows []cartRow, displ
 	}
 
 	vm.Currency = displayCurrency
-	vm.BaseCurrency = baseCurrency
+	vm.BaseCurrency = itemCurrency
 	vm.Count = count
 	vm.SubtotalCents = subtotalBase
 	vm.DisplaySubtotalCents = subtotalDisplay
@@ -212,7 +239,7 @@ func (s *Service) baseCurrency() string {
 	return ""
 }
 
-func (s *Service) normalizeDisplayCurrency(ctx context.Context, current string) string {
+func (s *Service) normalizeDisplayCurrency(_ context.Context, current string) string {
 	if s.currency == nil {
 		if current == "" {
 			return s.baseCurrency()

@@ -66,7 +66,7 @@ func AdminOrdersListBody(p view.AdminOrdersListPage) templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"space-y-8\"><div class=\"rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/20 backdrop-blur\"><p class=\"text-xs font-semibold uppercase tracking-[0.4em] text-amber-400\">pehliONE</p><div class=\"mt-2 flex flex-wrap items-end justify-between gap-4\"><div><h1 class=\"text-3xl font-bold text-white\">Order management</h1><p class=\"text-sm text-slate-300\">Filter active orders and take action.</p></div><div class=\"rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"space-y-8\"><div class=\"rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/20 backdrop-blur\"><p class=\"text-xs font-semibold uppercase tracking-[0.4em] text-amber-400\">PehliONE</p><div class=\"mt-2 flex flex-wrap items-end justify-between gap-4\"><div><h1 class=\"text-3xl font-bold text-white\">Order management</h1><p class=\"text-sm text-slate-300\">Filter active orders and take action.</p></div><div class=\"rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

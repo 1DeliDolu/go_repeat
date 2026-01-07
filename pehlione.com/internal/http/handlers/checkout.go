@@ -103,6 +103,20 @@ func (h *CheckoutHandler) Get(c *gin.Context) {
 	}
 	if authed {
 		form.Email = u.Email
+		// Pre-fill address information for authenticated users
+		if u.FirstName != nil {
+			form.FirstName = *u.FirstName
+		}
+		if u.LastName != nil {
+			form.LastName = *u.LastName
+		}
+		if u.Address != nil {
+			form.Address1 = *u.Address
+		}
+		if u.PhoneE164 != nil {
+			form.Phone = *u.PhoneE164
+		}
+		log.Printf("Checkout GET: pre-filled form for user %s (email=%s)", u.ID, u.Email)
 	}
 
 	opts := shippingOptions(c.Request.Context(), h.CurrencySvc, currency)
@@ -176,6 +190,7 @@ func (h *CheckoutHandler) Post(c *gin.Context) {
 
 	if authed {
 		userID = &u.ID
+		log.Printf("Checkout: authenticated user %s (email=%s) proceeding with checkout", u.ID, u.Email)
 		// Get user cart ID
 		crt, err := cartmod.NewRepo(h.DB).GetOrCreateUserCart(c.Request.Context(), u.ID)
 		if err != nil {
@@ -186,6 +201,7 @@ func (h *CheckoutHandler) Post(c *gin.Context) {
 	} else {
 		em := strings.ToLower(strings.TrimSpace(in.Email))
 		guestEmail = &em
+		log.Printf("Checkout: guest checkout with email=%s", em)
 
 		// Guest: create temporary cart from cookie
 		cc, _ := h.CartCK.Get(c)
@@ -219,6 +235,7 @@ func (h *CheckoutHandler) Post(c *gin.Context) {
 		chargeCurrency = h.CurrencySvc.ChooseChargeCurrency(currency)
 	}
 
+	log.Printf("Starting CreateFromCart: cartID=%s", cartID)
 	res, err := h.OrderSv.CreateFromCart(c.Request.Context(), orders.CreateFromCartInput{
 		CartID:              cartID,
 		UserID:              userID,
@@ -233,6 +250,7 @@ func (h *CheckoutHandler) Post(c *gin.Context) {
 		ChargeCurrency:      chargeCurrency,
 	})
 	if err != nil {
+		log.Printf("CreateFromCart failed with error type %T: %v", err, err)
 		var oos *checkout.OutOfStockError
 		if errors.As(err, &oos) {
 			log.Printf("Checkout failed: out of stock - %v", err)
@@ -334,6 +352,7 @@ func (h *CheckoutHandler) buildCartSummary(c *gin.Context) (view.CheckoutSummary
 }
 
 func (h *CheckoutHandler) createTempCartFromCookie(c *gin.Context, cc *cartcookie.Cart) (*cartmod.Cart, error) {
+	log.Printf("createTempCartFromCookie: starting with %d items from cookie", len(cc.Items))
 	repo := cartmod.NewRepo(h.DB)
 
 	// Create empty cart with UUID
@@ -341,22 +360,28 @@ func (h *CheckoutHandler) createTempCartFromCookie(c *gin.Context, cc *cartcooki
 		ID:     uuid.NewString(),
 		UserID: nil,
 	}
+	log.Printf("createTempCartFromCookie: creating temp cart with ID %s", tempCart.ID)
 	if err := h.DB.Create(&tempCart).Error; err != nil {
 		log.Printf("createTempCartFromCookie: failed to create cart: %v", err)
 		return nil, err
 	}
 
 	// Add items from cookie
+	addedCount := 0
 	for _, it := range cc.Items {
 		if it.VariantID == "" || it.Qty <= 0 {
+			log.Printf("createTempCartFromCookie: skipping invalid item variant_id=%s qty=%d", it.VariantID, it.Qty)
 			continue
 		}
+		log.Printf("createTempCartFromCookie: adding item to cart variant_id=%s qty=%d", it.VariantID, it.Qty)
 		if err := repo.AddItem(c.Request.Context(), tempCart.ID, it.VariantID, it.Qty); err != nil {
 			log.Printf("createTempCartFromCookie: failed to add item %s: %v", it.VariantID, err)
 			return nil, err
 		}
+		addedCount++
 	}
 
+	log.Printf("createTempCartFromCookie: successfully created temp cart %s with %d items", tempCart.ID, addedCount)
 	return &tempCart, nil
 }
 

@@ -236,7 +236,15 @@
     }
 
     colorInputs.forEach(function (el) {
-      el.addEventListener("change", sync);
+      el.addEventListener("change", function() {
+        sync();
+        // Update selected color text
+        var selectedColorText = document.getElementById("selected_color");
+        if (selectedColorText) {
+          var colorName = el.value;
+          selectedColorText.innerHTML = 'Seçili: <span class="font-medium">' + colorName + '</span>';
+        }
+      });
     });
     sizeInputs.forEach(function (el) {
       el.addEventListener("change", sync);

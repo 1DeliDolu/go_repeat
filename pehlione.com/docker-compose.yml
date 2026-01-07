@@ -12,23 +12,41 @@ services:
       - mysqldata:/var/lib/mysql
     command: ["--default-authentication-plugin=mysql_native_password"]
 
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
   web:
     build: .
     ports:
       - "8080:8080"
     depends_on:
       - db
+      - mailhog
     environment:
       - DB_DSN=root:@tcp(db:3306)/pehlione_go?parseTime=true
       - GIN_MODE=release
+      - SMTP_HOST=mailhog
+      - SMTP_PORT=1025
+      - SMTP_USER=
+      - SMTP_PASS=
+      - SMTP_USE_TLS=false
     command: ["/app/web"]
 
   worker:
     build: .
     depends_on:
       - db
+      - mailhog
     environment:
       - DB_DSN=root:@tcp(db:3306)/pehlione_go?parseTime=true
+      - SMTP_HOST=mailhog
+      - SMTP_PORT=1025
+      - SMTP_USER=
+      - SMTP_PASS=
+      - SMTP_USE_TLS=false
     command: ["/app/worker"]
 
   sms-worker:

@@ -2,6 +2,7 @@ package orders
 
 import (
 	"context"
+	"log"
 	"strings"
 
 	"gorm.io/gorm"
@@ -32,6 +33,7 @@ type ListByUserItem struct {
 }
 
 func (r *Repo) ListByUser(ctx context.Context, in ListByUserParams) (ListByUserResult, error) {
+	log.Printf("ListByUser: fetching orders for user_id=%s", in.UserID)
 	page := in.Page
 	if page < 1 {
 		page = 1
@@ -42,15 +44,26 @@ func (r *Repo) ListByUser(ctx context.Context, in ListByUserParams) (ListByUserR
 	}
 	status := strings.TrimSpace(in.Status)
 
-	q := r.db.WithContext(ctx).Model(&Order{}).Where("user_id = ?", in.UserID)
+	// Get user email to also include guest orders
+	var userEmail string
+	if err := r.db.WithContext(ctx).Table("users").Select("email").Where("id = ?", in.UserID).Scan(&userEmail).Error; err != nil {
+		log.Printf("ListByUser: failed to get user email: %v", err)
+		userEmail = ""
+	}
+
+	// Include both user_id orders AND guest orders with matching email
+	q := r.db.WithContext(ctx).Model(&Order{}).
+		Where("user_id = ? OR (user_id IS NULL AND guest_email = ?)", in.UserID, userEmail)
 	if status != "" {
 		q = q.Where("status = ?", status)
 	}
 
 	var total int64
 	if err := q.Count(&total).Error; err != nil {
+		log.Printf("ListByUser: count error: %v", err)
 		return ListByUserResult{}, err
 	}
+	log.Printf("ListByUser: found %d total orders for user %s (email=%s)", total, in.UserID, userEmail)
 
 	var orders []Order
 	if err := q.
@@ -58,8 +71,10 @@ func (r *Repo) ListByUser(ctx context.Context, in ListByUserParams) (ListByUserR
 		Limit(size).
 		Offset((page - 1) * size).
 		Find(&orders).Error; err != nil {
+		log.Printf("ListByUser: find error: %v", err)
 		return ListByUserResult{}, err
 	}
+	log.Printf("ListByUser: fetched %d orders on page %d", len(orders), page)
 
 	items := make([]ListByUserItem, len(orders))
 	for i, o := range orders {
@@ -67,6 +82,7 @@ func (r *Repo) ListByUser(ctx context.Context, in ListByUserParams) (ListByUserR
 		if err := r.db.WithContext(ctx).Model(&OrderItem{}).Where("order_id = ?", o.ID).Count(&count).Error; err != nil {
 			count = 0
 		}
+		log.Printf("ListByUser: order %s has %d items", o.ID, count)
 		items[i] = ListByUserItem{Order: o, Count: int(count)}
 	}
 

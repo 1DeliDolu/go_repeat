@@ -68,7 +68,7 @@ func (s *VerificationService) GenerateOTP() (string, error) {
 		return "", err
 	}
 	// Convert 3 random bytes to 6-digit number (0-999999)
-	num := int((b[0]<<16)|(b[1]<<8)|b[2]) % 1000000
+	num := int((int(b[0])<<16)|(int(b[1])<<8)|int(b[2])) % 1000000
 	return fmt.Sprintf("%06d", num), nil
 }
 

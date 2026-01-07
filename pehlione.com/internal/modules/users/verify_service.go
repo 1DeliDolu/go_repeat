@@ -18,7 +18,7 @@ import (
 type EmailVerification struct {
 	ID        string     `gorm:"primaryKey;column:id"`
 	UserID    string     `gorm:"column:user_id"`
-	CodeHash  []byte     `gorm:"column:code_hash"`
+	CodeHash  []byte     `gorm:"column:code_hash;type:binary(32)"`
 	ExpiresAt time.Time  `gorm:"column:expires_at"`
 	UsedAt    *time.Time `gorm:"column:used_at"`
 	CreatedAt time.Time  `gorm:"column:created_at"`
