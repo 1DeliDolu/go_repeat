@@ -2,6 +2,7 @@ package shipping
 
 import (
 	"context"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -13,6 +14,9 @@ type Repo struct {
 func NewRepo(db *gorm.DB) *Repo { return &Repo{db: db} }
 
 func (r *Repo) ListByOrder(ctx context.Context, orderID string) ([]Shipment, error) {
+	// Normalize UUID to lowercase
+	orderID = strings.ToLower(strings.TrimSpace(orderID))
+
 	var shipments []Shipment
 	err := r.db.WithContext(ctx).
 		Order("created_at ASC").

@@ -12,6 +12,14 @@ services:
       - mysqldata:/var/lib/mysql
     command: ["--default-authentication-plugin=mysql_native_password"]
 
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    environment:
+      MH_STORAGE: memory
+
   web:
     build: .
     ports:

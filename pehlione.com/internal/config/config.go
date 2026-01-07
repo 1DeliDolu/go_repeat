@@ -8,12 +8,13 @@ import (
 )
 
 type SMTPConfig struct {
-	Host   string
-	Port   int
-	User   string
-	Pass   string
-	From   string
-	UseTLS bool
+	Host          string
+	Port          string
+	User          string
+	Pass          string
+	From          string
+	TLSMode       string // none|starttls|tls
+	SkipVerifyTLS bool
 }
 
 type MailtrapConfig struct {
@@ -92,12 +93,13 @@ func Load() (AppConfig, error) {
 
 func loadEmailConfig() EmailConfig {
 	smtp := SMTPConfig{
-		Host:   strings.TrimSpace(os.Getenv("SMTP_HOST")),
-		Port:   parseInt(getEnv("SMTP_PORT", "587"), 587),
-		User:   strings.TrimSpace(os.Getenv("SMTP_USER")),
-		Pass:   strings.TrimSpace(os.Getenv("SMTP_PASS")),
-		From:   strings.TrimSpace(getEnv("SMTP_FROM", "no-reply@pehlione.com")),
-		UseTLS: parseBool(getEnv("SMTP_USE_TLS", "true"), true),
+		Host:          strings.TrimSpace(getEnv("SMTP_HOST", "localhost")),
+		Port:          strings.TrimSpace(getEnv("SMTP_PORT", "1025")),
+		User:          strings.TrimSpace(os.Getenv("SMTP_USER")),
+		Pass:          strings.TrimSpace(os.Getenv("SMTP_PASS")),
+		From:          strings.TrimSpace(getEnv("SMTP_FROM", "no-reply@pehlione.com")),
+		TLSMode:       strings.ToLower(strings.TrimSpace(getEnv("SMTP_TLS_MODE", "none"))),
+		SkipVerifyTLS: parseBool(getEnv("SMTP_SKIP_VERIFY_TLS", "false"), false),
 	}
 
 	emailFrom := strings.TrimSpace(os.Getenv("EMAIL_FROM"))
@@ -188,8 +190,12 @@ func validateConfig(cfg *AppConfig) error {
 		if cfg.Email.SMTP.Host == "" {
 			return fmt.Errorf("SMTP_HOST is required when email sending is enabled")
 		}
-		if cfg.Email.SMTP.Port <= 0 {
-			return fmt.Errorf("SMTP_PORT must be greater than zero")
+		if cfg.Email.SMTP.Port == "" {
+			return fmt.Errorf("SMTP_PORT is required when email sending is enabled")
+		}
+		// Validate Port is a valid number
+		if _, err := strconv.Atoi(cfg.Email.SMTP.Port); err != nil {
+			return fmt.Errorf("SMTP_PORT must be a valid port number: %w", err)
 		}
 		if cfg.Email.SMTP.From == "" {
 			return fmt.Errorf("SMTP_FROM is required when email sending is enabled")

@@ -165,7 +165,7 @@ func (s *Service) QueueShipment(ctx context.Context, in QueueShipmentInput) (Shi
 			Status:       JobPending,
 			Payload:      datatypes.JSON(data),
 			AttemptCount: 0,
-			ScheduledAt:  now,
+			ScheduledAt:  now.Add(20 * time.Second),
 			CreatedAt:    now,
 			UpdatedAt:    now,
 		}

@@ -14,6 +14,7 @@ import (
 	"gorm.io/gorm"
 
 	"pehlione.com/app/internal/config"
+	"pehlione.com/app/internal/mailer"
 	"pehlione.com/app/internal/modules/email"
 	"pehlione.com/app/internal/modules/fx"
 	"pehlione.com/app/internal/modules/shipping"
@@ -49,21 +50,15 @@ func main() {
 	if cfg.Email.Enabled {
 		brandName := strings.TrimSpace(cfg.Email.FromName)
 		if brandName == "" {
-			brandName = "pehliONE"
+			brandName = "PehliONE"
 		}
 		supportEmail := strings.TrimSpace(cfg.Email.SMTP.From)
 		if supportEmail == "" {
 			supportEmail = "support@pehlione.com"
 		}
 		renderer := email.NewRenderer(cfg.AppBaseURL, brandName, supportEmail)
-		sender := email.NewSMTPSender(email.SMTPCfg{
-			Host:   cfg.Email.SMTP.Host,
-			Port:   cfg.Email.SMTP.Port,
-			User:   cfg.Email.SMTP.User,
-			Pass:   cfg.Email.SMTP.Pass,
-			From:   cfg.Email.SMTP.From,
-			UseTLS: cfg.Email.SMTP.UseTLS,
-		})
+		smtpMailer := mailer.NewSMTPMailer(cfg.Email.SMTP)
+		sender := email.NewMailerAdapter(smtpMailer, cfg.Email.SMTP.From, brandName)
 
 		emailWorker := email.NewWorker(db, sender, renderer)
 		started++

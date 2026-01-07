@@ -2,6 +2,7 @@ package orders
 
 import (
 	"context"
+	"log"
 	"strings"
 )
 
@@ -58,20 +59,32 @@ func (r *Repo) AdminList(ctx context.Context, in AdminListParams) (AdminListResu
 }
 
 func (r *Repo) AdminGetDetail(ctx context.Context, orderID string) (Order, []OrderItem, []OrderEvent, error) {
+	// Normalize UUID to lowercase
+	orderID = strings.ToLower(strings.TrimSpace(orderID))
+	log.Printf("[orders.AdminGetDetail] Starting: id=%s", orderID)
+
 	o, items, err := r.GetWithItems(ctx, orderID)
 	if err != nil {
+		log.Printf("[orders.AdminGetDetail] GetWithItems failed: id=%s, err=%v", orderID, err)
 		return Order{}, nil, nil, err
 	}
+	log.Printf("[orders.AdminGetDetail] GetWithItems succeeded: id=%s", orderID)
+
 	var ev []OrderEvent
 	if err := r.db.WithContext(ctx).
 		Order("created_at DESC").
 		Find(&ev, "order_id = ?", orderID).Error; err != nil {
+		log.Printf("[orders.AdminGetDetail] Events query failed: id=%s, err=%v", orderID, err)
 		return Order{}, nil, nil, err
 	}
+	log.Printf("[orders.AdminGetDetail] Events found: id=%s, count=%d", orderID, len(ev))
 	return o, items, ev, nil
 }
 
 func (r *Repo) AdminListFinancial(ctx context.Context, orderID string) ([]FinancialEntry, error) {
+	// Normalize UUID to lowercase
+	orderID = strings.ToLower(strings.TrimSpace(orderID))
+
 	var out []FinancialEntry
 	err := r.db.WithContext(ctx).
 		Order("created_at DESC").

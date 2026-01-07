@@ -20,6 +20,7 @@ import (
 	adminHandlers "pehlione.com/app/internal/http/handlers/admin"
 	"pehlione.com/app/internal/http/middleware"
 	"pehlione.com/app/internal/http/render"
+	"pehlione.com/app/internal/mailer"
 	"pehlione.com/app/internal/modules/auth"
 	"pehlione.com/app/internal/modules/cart"
 	"pehlione.com/app/internal/modules/currency"
@@ -272,16 +273,9 @@ func NewRouter(logger *slog.Logger, db *gorm.DB, cfg config.AppConfig) *gin.Engi
 	if cfg.Email.Enabled {
 		emailSvc = email.NewService(db)
 
-		smtpCfg := email.SMTPCfg{
-			Host:   cfg.Email.SMTP.Host,
-			Port:   cfg.Email.SMTP.Port,
-			User:   cfg.Email.SMTP.User,
-			Pass:   cfg.Email.SMTP.Pass,
-			From:   cfg.Email.SMTP.From,
-			UseTLS: cfg.Email.SMTP.UseTLS,
-		}
-		log.Printf("Email worker: initializing with SMTP host=%s port=%d from=%s", smtpCfg.Host, smtpCfg.Port, smtpCfg.From)
-		sender := email.NewSMTPSender(smtpCfg)
+		smtpMailer := mailer.NewSMTPMailer(cfg.Email.SMTP)
+		sender := email.NewMailerAdapter(smtpMailer, cfg.Email.SMTP.From, brandName)
+		log.Printf("Email worker: initializing with SMTP host=%s port=%s from=%s", cfg.Email.SMTP.Host, cfg.Email.SMTP.Port, cfg.Email.SMTP.From)
 
 		renderer := email.NewRenderer(appBaseURL, brandName, supportEmail)
 		worker := email.NewWorker(db, sender, renderer)

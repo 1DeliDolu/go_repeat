@@ -1,31 +1,31 @@
 
 # Pehlione E-Commerce Platform
 
-Go tabanlı, server-side rendering (SSR) kullanan modern e-ticaret platformu.
+Modern e-commerce platform built with Go, using server-side rendering (SSR).
 
-## 🚀 Özellikler
+## 🚀 Features
 
-### Kullanıcı Özellikleri
-- ✅ Kullanıcı kaydı ve kimlik doğrulama (session-based)
-- ✅ Guest (misafir) ve kayıtlı kullanıcı desteği
-- ✅ Role-based yetkilendirme (user/admin)
-- ✅ CSRF koruması (double-submit cookie pattern)
+### User Features
+- ✅ User registration and authentication (session-based)
+- ✅ Guest and registered user support
+- ✅ Role-based authorization (user/admin)
+- ✅ CSRF protection (double-submit cookie pattern)
 
-### Alışveriş Sepeti
-- ✅ DB tabanlı sepet (kayıtlı kullanıcılar)
-- ✅ Cookie tabanlı sepet (misafir kullanıcılar)
-- ✅ Gerçek zamanlı sepet badge güncellemesi
-- ✅ Session cache optimizasyonu
-- ✅ Aynı ürünün miktar artırma desteği
+### Shopping Cart
+- ✅ Database-based cart (registered users)
+- ✅ Cookie-based cart (guest users)
+- ✅ Real-time cart badge updates
+- ✅ Session cache optimization
+- ✅ Quantity increment for same products
 
-### Ödeme ve Sipariş
-- ✅ Checkout akışı (adres formu, kargo seçimi)
-- ✅ Guest checkout (email ile)
-- ✅ Kayıtlı kullanıcı checkout
-- ✅ Idempotency key desteği (tekrar sipariş önleme)
-- ✅ Stok kontrolü ve rezervasyon
-- ✅ Sipariş detay sayfası
-- ✅ Admin sipariş yönetimi
+### Payment & Orders
+- ✅ Checkout flow (address form, shipping selection)
+- ✅ Guest checkout (email-based)
+- ✅ Registered user checkout
+- ✅ Idempotency key support (prevent duplicate orders)
+- ✅ Stock control and reservation
+- ✅ Order detail page
+- ✅ Admin order management
 
 ### Technical Features
 - Server-Side Rendering (Templ)
@@ -43,7 +43,7 @@ Go tabanlı, server-side rendering (SSR) kullanan modern e-ticaret platformu.
 - Structured logging (slog)
 - CSRF protection (double-submit cookie pattern)
 
-## 🏗️ Proje Yapısı
+## 🏗️ Project Structure
 
 ---
 ```
@@ -124,13 +124,13 @@ pehlione.com/
 └── magefile.go         # Build automation (Mage)
 ```
 ---
-## 🗄️ Database Schema (Extended)
+## 🗄️ Database Schema
 
 ### Core Tables
-- **users** - Kullanıcı bilgileri (id, email, password_hash, role)
-- **sessions** - Oturum yönetimi
-- **carts** - Alışveriş sepetleri (id, user_id, status)
-- **cart_items** - Sepet içerikleri (cart_id, variant_id, quantity)
+- **users** - User information (id, email, password_hash, role)
+- **sessions** - Session management
+- **carts** - Shopping carts (id, user_id, status)
+- **cart_items** - Cart contents (cart_id, variant_id, quantity)
 
 ### Product Tables
 - **products** - Product information (id, name, slug, status)
@@ -147,7 +147,7 @@ pehlione.com/
 - **payment_intents** - Payment tracking (id, order_id, provider, status, amount_cents)
 - **refunds** - Refund records (id, payment_intent_id, amount_cents, status)
 
-## 🛠️ Teknoloji Stack
+## 🛠️ Technology Stack
 
 ### Backend
 - **Go 1.22+** - Programming language
@@ -165,25 +165,23 @@ pehlione.com/
 - **Air** - Hot reload development
 - **Goose** - Database migrations
 
-## 📦 Kurulum
+## 📦 Installation
 
-### Gereksinimler
-- Go 1.22 veya üzeri
+### Requirements
+- Go 1.22 or higher
 - MySQL 8.0+
-- Node.js (Tailwind CSS için)
+- Node.js (for Tailwind CSS)
 
-### Adımlar
+### Steps
 
-1. **Projeyi klonlayın**
----
+1. **Clone the repository**
 ---
 ```bash
 git clone <repo-url>
 cd pehlione.com
 ```
 ---
-2. **Bağımlılıkları yükleyin**
----
+2. **Install dependencies**
 ---
 ```bash
 go mod download
@@ -193,36 +191,31 @@ npm install  # Tailwind için
 3. **Environment variables ayarlayın**
 ---
 ---
+---
 ```bash
-# .env dosyası oluşturun
-cp .env.example .env
+3. **Set up environment variables**
 ```
 ---
-Gerekli değişkenler:
----
+# Create .env file
+cp .env.example .env
 ---
 ```env
-DB_DSN=user:pass@tcp(localhost:3306)/pehlione_go?parseTime=true
-SECRET_KEY=<64-char-hex-secret>
-SESSION_TTL_HOURS=168
+Required variables:
 ```
 ---
 4. **Database migration**
----
 ---
 ```bash
 goose -dir migrations mysql "user:pass@/pehlione_go" up
 ```
 ---
-5. **Templ generate**
----
+5. **Generate Templ**
 ---
 ```bash
 templ generate
 ```
 ---
-6. **Build ve çalıştır**
----
+6. **Build and run**
 ---
 ```bash
 # Development (hot reload)
@@ -233,7 +226,7 @@ mage build
 ./bin/pehlione-web.exe
 ```
 ---
-## 🔐 Güvenlik
+## 🔐 Security
 
 ### Implemented Security Features
 - ✅ CSRF Protection (double-submit cookie)
@@ -244,13 +237,13 @@ mage build
 - ✅ Input validation (go-playground/validator)
 
 ### Cookie Settings
-- `SameSite=Lax` - CSRF koruması
-- `HttpOnly=true` - Session cookies için XSS önleme
-- `Secure=true` - Production'da HTTPS zorunluluğu
+- `SameSite=Lax` - CSRF protection
+- `HttpOnly=true` - XSS prevention for session cookies
+- `Secure=true` - HTTPS enforcement in production
 
-## 🧪 Test Kullanıcıları
+## 🧪 Test Users
 
-Database seed migration ile oluşturulur:
+Created via database seed migration:
 
 | Email | Password | Role |
 |-------|----------|------|
@@ -261,48 +254,45 @@ Database seed migration ile oluşturulur:
 
 ### Public Routes
 ---
----
 ```
-GET  /                    # Ana sayfa
-GET  /products            # Ürün listesi
-GET  /cart                # Sepet sayfası
-POST /cart/add            # Sepete ekleme (CSRF)
-GET  /checkout            # Checkout sayfası
-POST /checkout            # Sipariş oluşturma (CSRF)
-GET  /signup              # Kayıt formu
-POST /signup              # Kayıt işlemi (CSRF)
-GET  /login               # Giriş formu
-POST /login               # Giriş işlemi (CSRF)
-POST /logout              # Çıkış (CSRF)
+GET  /                    # Home page
+GET  /products            # Product listing
+GET  /cart                # Cart page
+POST /cart/add            # Add to cart (CSRF)
+GET  /checkout            # Checkout page
+POST /checkout            # Create order (CSRF)
+GET  /signup              # Signup form
+POST /signup              # Signup process (CSRF)
+GET  /login               # Login form
+POST /login               # Login process (CSRF)
+POST /logout              # Logout (CSRF)
 ```
 ---
 ### Authenticated Routes
 ---
----
 ```
-GET  /account/orders      # Kullanıcı siparişleri
-GET  /orders/:id          # Sipariş detayı
-POST /orders/:id/pay      # Ödeme başlat (CSRF)
+GET  /account/orders      # User orders
+GET  /orders/:id          # Order detail
+POST /orders/:id/pay      # Start payment (CSRF)
 ```
 ---
 ### Admin Routes
 ---
----
 ```
-GET  /admin/orders        # Tüm siparişler
-GET  /admin/orders/:id    # Sipariş detayı
-POST /admin/orders/:id    # Sipariş aksiyonu (CSRF)
+GET  /admin/orders        # All orders
+GET  /admin/orders/:id    # Order detail
+POST /admin/orders/:id    # Order action (CSRF)
 ```
 ---
 ## 🚦 Middleware Stack
 
-Request işleme sırası:
-1. **RequestID** - Her request için unique ID
+Request processing order:
+1. **RequestID** - Unique ID for each request
 2. **Logger** - Structured logging (slog)
 3. **Flash** - Flash message handling
 4. **CSRF** - CSRF token validation
 5. **Session** - Session management
-6. **CartBadge** - Cart count için DB/cookie query
+6. **CartBadge** - Cart count DB/cookie query
 7. **ErrorHandler** - Structured error handling
 8. **Recovery** - Panic recovery
 
@@ -324,8 +314,8 @@ Request işleme sırası:
 6. Cart page reads from DB with JOIN
 
 ### Guest → Logged-in Migration
-- Login sonrası cookie cart otomatik DB cart'a merge edilir
-- Cookie temizlenir
+- Cookie cart automatically merged to DB cart after login
+- Cookie is cleared
 
 ## 💳 Checkout Flow
 
@@ -338,7 +328,6 @@ Request işleme sırası:
 - **Retry Strategy** - Exponential backoff for failed sends
 
 ### Email Flow
----
 
 ---
 ```go
@@ -359,7 +348,6 @@ for _, email := range emails {
 }
 ```
 ---
-
 ## 💳 Payment & Refund System
 
 ### Payment Provider Interface
@@ -384,16 +372,15 @@ for _, email := range emails {
 - **go-pdf/fpdf** - Native Go PDF generation (no external dependencies)
 
 ### 1. Cart Validation
-- En az 1 ürün kontrolü
+- Minimum 1 product check
 - Currency consistency check
 
 ### 2. Form Submission
 - CSRF token validation
 - Address validation (go-playground/validator)
-- Email validation (guest için zorunlu)
+- Email validation (required for guests)
 
 ### 3. Order Creation (Transaction)
----
 ---
 ```
 1. Read cart items
@@ -453,6 +440,7 @@ Benefits:
 ### Type-safe Components
 ---
 ---
+---
 ```go
 // Reusable product card components
 templ StandardProductCard(p ProductCardVM, csrf string) {
@@ -495,6 +483,7 @@ templ ProductsIndexPage(vm ProductsIndexVM) {
 ### Template Generation
 ---
 ---
+---
 ```bash
 # Generate _templ.go files
 templ generate
@@ -507,14 +496,12 @@ templ generate --watch
 
 ### Structured Logging
 ---
----
 ```go
 log.Printf("CartAdd: error adding item: %v", err)
 log.Printf("Checkout error (unhandled): %T - %v", err, err)
 ```
 ---
 ### Request Tracking
----
 ---
 ```json
 {
@@ -550,14 +537,119 @@ log.Printf("Checkout error (unhandled): %T - %v", err, err)
 - [ ] Payment provider production credentials
 
 ### Future Enhancements
-- [ ] Product search & filtering
-- [ ] Wishlist functionality
-- [ ] Customer reviews
-- [ ] Multi-currency support
 - [ ] Real payment provider integration (Stripe, PayPal)
-- [ ] Shipping provider integrations
-- [ ] Advanced email templates
-- [ ] SMS notifications
+- [ ] Advanced email templates with dynamic content
+- [ ] Shipping carrier integrations (FedEx, UPS, DHL tracking)
+
+## 🔀 GitHub Setup & Branch Management
+
+### Initial Repository Setup
+
+---
+```bash
+# Initialize git repository (if not already done)
+git init
+
+# Add remote repository
+git remote add origin https://github.com/1DeliDolu/go_repeat.git
+
+# Check remote configuration
+git remote -v
+
+# Push to main branch
+git add .
+git commit -m "Initial commit"
+git branch -M main
+git push -u origin main
+```
+---
+
+### Branch Management
+
+---
+```bash
+# Create and switch to a new branch
+git checkout -b feature/new-feature
+
+# Or create branch without switching
+git branch feature/new-feature
+
+# List all branches
+git branch -a
+
+# Switch between branches
+git checkout main
+git checkout feature/new-feature
+
+# Push new branch to remote
+git push -u origin feature/new-feature
+
+# Delete a local branch
+git branch -d feature/old-feature
+
+# Delete a remote branch
+git push origin --delete feature/old-feature
+```
+---
+
+### Common Branch Workflows
+
+**Feature Development Workflow:**
+
+---
+```bash
+# 1. Create feature branch from main
+git checkout main
+git pull origin main
+git checkout -b feature/shopping-cart-improvements
+
+# 2. Make changes and commit regularly
+git add .
+git commit -m "Add cart quantity update feature"
+
+# 3. Push to remote
+git push -u origin feature/shopping-cart-improvements
+
+# 4. Keep feature branch updated with main
+git checkout main
+git pull origin main
+git checkout feature/shopping-cart-improvements
+git merge main
+
+# 5. When ready, create Pull Request on GitHub
+```
+---
+
+**Hotfix Workflow:**
+
+---
+```bash
+# 1. Create hotfix branch from main
+git checkout main
+git checkout -b hotfix/critical-bug-fix
+
+# 2. Fix the issue and commit
+git add .
+git commit -m "Fix critical payment processing bug"
+
+# 3. Push and create PR
+git push -u origin hotfix/critical-bug-fix
+
+# 4. After merge, pull latest main
+git checkout main
+git pull origin main
+```
+---
+
+### Recommended Branch Naming Conventions
+
+- `feature/` - New features (e.g., `feature/user-authentication`)
+- `bugfix/` - Bug fixes (e.g., `bugfix/cart-calculation-error`)
+- `hotfix/` - Critical production fixes (e.g., `hotfix/payment-gateway-issue`)
+- `refactor/` - Code refactoring (e.g., `refactor/checkout-service`)
+- `docs/` - Documentation updates (e.g., `docs/api-documentation`)
+- `test/` - Adding or updating tests (e.g., `test/cart-unit-tests`)
+- `chore/` - Maintenance tasks (e.g., `chore/update-dependencies`)
 
 ## 🤝 Contributing
 

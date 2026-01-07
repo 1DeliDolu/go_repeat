@@ -2,6 +2,7 @@ package admin
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -75,13 +76,34 @@ func (h *OrdersHandler) List(c *gin.Context) {
 
 func (h *OrdersHandler) Detail(c *gin.Context) {
 	id := c.Param("id")
+	log.Printf("[admin/orders] Detail request: id=%s", id)
 
-	repo := orders.NewRepo(h.DB)
-	o, items, ev, err := repo.AdminGetDetail(c.Request.Context(), id)
-	if err != nil {
+	// Validate UUID format
+	if _, err := uuid.Parse(id); err != nil {
+		log.Printf("[admin/orders] Invalid UUID format: %v", err)
 		c.Error(apperr.NotFoundErr("Order bulunamadı."))
 		return
 	}
+
+	repo := orders.NewRepo(h.DB)
+
+	// Debug: check if order exists in DB
+	var testOrder orders.Order
+	dbResult := h.DB.Where("id = ?", strings.ToLower(strings.TrimSpace(id))).First(&testOrder)
+	log.Printf("[admin/orders] Direct DB query: id=%s, found=%v, err=%v",
+		strings.ToLower(strings.TrimSpace(id)),
+		dbResult.RowsAffected > 0,
+		dbResult.Error)
+
+	o, items, ev, err := repo.AdminGetDetail(c.Request.Context(), id)
+	if err != nil {
+		log.Printf("[admin/orders] AdminGetDetail error: %v", err)
+		// Log the actual error for debugging
+		c.Request.Header.Set("X-Debug-Error", err.Error())
+		c.Error(apperr.NotFoundErr("Order bulunamadı."))
+		return
+	}
+	log.Printf("[admin/orders] Successfully loaded order: id=%s", o.ID)
 
 	vm := view.AdminOrderDetail{
 		ID:         o.ID,

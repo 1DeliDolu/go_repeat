@@ -2,6 +2,7 @@ package orders
 
 import (
 	"context"
+	"log"
 	"strings"
 
 	"gorm.io/gorm"
@@ -74,13 +75,22 @@ func (r *Repo) ListByUser(ctx context.Context, in ListByUserParams) (ListByUserR
 }
 
 func (r *Repo) GetWithItems(ctx context.Context, id string) (Order, []OrderItem, error) {
+	// Normalize UUID to lowercase (standard UUID format in most databases)
+	id = strings.ToLower(strings.TrimSpace(id))
+	log.Printf("[orders.GetWithItems] Fetching order: id=%s", id)
+
 	var o Order
 	if err := r.db.WithContext(ctx).First(&o, "id = ?", id).Error; err != nil {
+		log.Printf("[orders.GetWithItems] Order not found: id=%s, err=%v", id, err)
 		return Order{}, nil, err
 	}
+	log.Printf("[orders.GetWithItems] Order found: id=%s, status=%s", o.ID, o.Status)
+
 	var items []OrderItem
 	if err := r.db.WithContext(ctx).Order("created_at ASC").Find(&items, "order_id = ?", id).Error; err != nil {
+		log.Printf("[orders.GetWithItems] Items query failed: id=%s, err=%v", id, err)
 		return Order{}, nil, err
 	}
+	log.Printf("[orders.GetWithItems] Items found: id=%s, count=%d", id, len(items))
 	return o, items, nil
 }

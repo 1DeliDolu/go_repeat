@@ -321,14 +321,14 @@ func AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) templ.Component 
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "\"><h3 class=\"mb-2 font-semibold text-white\">Etiket oluştur</h3><label class=\"mb-1 block text-xs text-slate-400\">Kargo firması</label> <input class=\"mb-3 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white placeholder:text-slate-400 focus:border-amber-400 focus:outline-hidden\" name=\"carrier\" placeholder=\"Örn. mock-express\"> <label class=\"mb-1 block text-xs text-slate-400\">Servis (opsiyonel)</label> <input class=\"mb-3 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white placeholder:text-slate-400 focus:border-amber-400 focus:outline-hidden\" name=\"service\" placeholder=\"Örn. standard\"> <label class=\"mb-1 block text-xs text-slate-400\">Not (opsiyonel)</label> <textarea class=\"mb-3 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white placeholder:text-slate-400 focus:border-amber-400 focus:outline-hidden\" name=\"note\" rows=\"2\" placeholder=\"Not\"></textarea> <label class=\"mb-2 inline-flex items-center gap-2 text-xs text-slate-300\"><input type=\"checkbox\" name=\"confirm\" value=\"1\" class=\"rounded border-white/20 bg-transparent\"> Onaylıyorum</label> <button class=\"inline-flex rounded-full border border-white/10 px-4 py-2 text-xs font-semibold hover:border-amber-300\" type=\"submit\">Etiketi kuyruğa al</button></form><form method=\"post\" action=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "\"><h3 class=\"mb-2 font-semibold text-white\">Etiket oluştur</h3><label class=\"mb-1 block text-xs text-slate-400\">Kargo firması</label> <select name=\"carrier\" class=\"mb-3 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white focus:border-amber-400 focus:outline-hidden\"><option value=\"\">-- Seçiniz --</option> <option value=\"dhl\">DHL</option> <option value=\"hermes\">Hermes</option> <option value=\"dpd\">DPD</option> <option value=\"mock-express\">Mock Express (Test)</option></select> <label class=\"mb-1 block text-xs text-slate-400\">Servis (opsiyonel)</label> <input class=\"mb-3 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white placeholder:text-slate-400 focus:border-amber-400 focus:outline-hidden\" name=\"service\" placeholder=\"Örn. standard\"> <label class=\"mb-1 block text-xs text-slate-400\">Not (opsiyonel)</label> <textarea class=\"mb-3 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white placeholder:text-slate-400 focus:border-amber-400 focus:outline-hidden\" name=\"note\" rows=\"2\" placeholder=\"Not\"></textarea> <label class=\"mb-2 inline-flex items-center gap-2 text-xs text-slate-300\"><input type=\"checkbox\" name=\"confirm\" value=\"1\" class=\"rounded border-white/20 bg-transparent\"> Onaylıyorum</label> <button class=\"inline-flex rounded-full border border-white/10 px-4 py-2 text-xs font-semibold hover:border-amber-300\" type=\"submit\">Etiketi kuyruğa al</button></form><form method=\"post\" action=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var16 templ.SafeURL
 			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinURLErrs("/admin/orders/" + o.ID + "/shipments/manual")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 80, Col: 79}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 86, Col: 79}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 			if templ_7745c5c3_Err != nil {
@@ -341,13 +341,13 @@ func AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) templ.Component 
 			var templ_7745c5c3_Var17 string
 			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(csrf)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 81, Col: 57}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 87, Col: 57}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "\"><h3 class=\"mb-2 font-semibold text-white\">Manuel kargo</h3><label class=\"mb-1 block text-xs text-slate-400\">Kargo firması</label> <input class=\"mb-3 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white placeholder:text-slate-400 focus:border-amber-400 focus:outline-hidden\" name=\"carrier\" placeholder=\"Örn. Yurtiçi Kargo\"> <label class=\"mb-1 block text-xs text-slate-400\">Takip numarası</label> <input class=\"mb-3 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white placeholder:text-slate-400 focus:border-amber-400 focus:outline-hidden\" name=\"tracking_no\" placeholder=\"TRK123456\"> <label class=\"mb-1 block text-xs text-slate-400\">Takip linki (opsiyonel)</label> <input class=\"mb-3 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white placeholder:text-slate-400 focus:border-amber-400 focus:outline-hidden\" name=\"tracking_url\" placeholder=\"https://...\"> <label class=\"mb-1 block text-xs text-slate-400\">Not (opsiyonel)</label> <textarea class=\"mb-3 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white placeholder:text-slate-400 focus:border-amber-400 focus:outline-hidden\" name=\"note\" rows=\"2\" placeholder=\"Not\"></textarea> <label class=\"mb-2 inline-flex items-center gap-2 text-xs text-slate-300\"><input type=\"checkbox\" name=\"confirm\" value=\"1\" class=\"rounded border-white/20 bg-transparent\"> Onaylıyorum</label> <button class=\"inline-flex rounded-full border border-white/10 px-4 py-2 text-xs font-semibold hover:border-amber-300\" type=\"submit\">Kargoyu kaydet</button></form></div><p class=\"mt-3 text-xs text-slate-400\">Etiket işlemleri sağlayıcı API'si ile asenkron yürütülür. Hatalar otomatik yeniden denenecektir.</p>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "\"><h3 class=\"mb-2 font-semibold text-white\">Manuel kargo</h3><label class=\"mb-1 block text-xs text-slate-400\">Kargo firması</label> <select name=\"carrier\" class=\"mb-3 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white focus:border-amber-400 focus:outline-hidden\"><option value=\"\">-- Seçiniz --</option> <option value=\"dhl\">DHL</option> <option value=\"hermes\">Hermes</option> <option value=\"dpd\">DPD</option> <option value=\"turkcargo\">Türkiye Kargo</option> <option value=\"aras\">Aras Kargo</option> <option value=\"surat\">Sürat Kargo</option> <option value=\"ups\">UPS</option> <option value=\"fedex\">FedEx</option></select> <label class=\"mb-1 block text-xs text-slate-400\">Takip numarası</label> <input class=\"mb-3 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white placeholder:text-slate-400 focus:border-amber-400 focus:outline-hidden\" name=\"tracking_no\" placeholder=\"TRK123456\"> <label class=\"mb-1 block text-xs text-slate-400\">Takip linki (opsiyonel)</label> <input class=\"mb-3 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white placeholder:text-slate-400 focus:border-amber-400 focus:outline-hidden\" name=\"tracking_url\" placeholder=\"https://...\"> <label class=\"mb-1 block text-xs text-slate-400\">Not (opsiyonel)</label> <textarea class=\"mb-3 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white placeholder:text-slate-400 focus:border-amber-400 focus:outline-hidden\" name=\"note\" rows=\"2\" placeholder=\"Not\"></textarea> <label class=\"mb-2 inline-flex items-center gap-2 text-xs text-slate-300\"><input type=\"checkbox\" name=\"confirm\" value=\"1\" class=\"rounded border-white/20 bg-transparent\"> Onaylıyorum</label> <button class=\"inline-flex rounded-full border border-white/10 px-4 py-2 text-xs font-semibold hover:border-amber-300\" type=\"submit\">Kargoyu kaydet</button></form></div><p class=\"mt-3 text-xs text-slate-400\">Etiket işlemleri sağlayıcı API'si ile asenkron yürütülür. Hatalar otomatik yeniden denenecektir.</p>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -364,7 +364,7 @@ func AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) templ.Component 
 		var templ_7745c5c3_Var18 string
 		templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(o.ID)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 109, Col: 41}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 125, Col: 41}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 		if templ_7745c5c3_Err != nil {
@@ -377,7 +377,7 @@ func AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) templ.Component 
 		var templ_7745c5c3_Var19 string
 		templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(o.CreatedAt)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 113, Col: 48}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 129, Col: 48}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 		if templ_7745c5c3_Err != nil {
@@ -390,7 +390,7 @@ func AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) templ.Component 
 		var templ_7745c5c3_Var20 string
 		templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(o.UserID)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 117, Col: 45}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 133, Col: 45}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 		if templ_7745c5c3_Err != nil {
@@ -403,7 +403,7 @@ func AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) templ.Component 
 		var templ_7745c5c3_Var21 string
 		templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(o.GuestEmail)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 121, Col: 49}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 137, Col: 49}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 		if templ_7745c5c3_Err != nil {
@@ -461,7 +461,7 @@ func AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) templ.Component 
 			var templ_7745c5c3_Var22 string
 			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(it.ProductName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 151, Col: 60}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 167, Col: 60}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 			if templ_7745c5c3_Err != nil {
@@ -479,7 +479,7 @@ func AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) templ.Component 
 				var templ_7745c5c3_Var23 string
 				templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(it.Options)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 153, Col: 55}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 169, Col: 55}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 				if templ_7745c5c3_Err != nil {
@@ -497,7 +497,7 @@ func AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) templ.Component 
 			var templ_7745c5c3_Var24 string
 			templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(it.SKU)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 155, Col: 55}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 171, Col: 55}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 			if templ_7745c5c3_Err != nil {
@@ -510,7 +510,7 @@ func AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) templ.Component 
 			var templ_7745c5c3_Var25 string
 			templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(it.Qty)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 158, Col: 26}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 174, Col: 26}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 			if templ_7745c5c3_Err != nil {
@@ -523,7 +523,7 @@ func AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) templ.Component 
 			var templ_7745c5c3_Var26 string
 			templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(it.Unit)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 159, Col: 22}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 175, Col: 22}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 			if templ_7745c5c3_Err != nil {
@@ -536,7 +536,7 @@ func AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) templ.Component 
 			var templ_7745c5c3_Var27 string
 			templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(it.Line)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 159, Col: 77}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 175, Col: 77}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 			if templ_7745c5c3_Err != nil {
@@ -569,7 +569,7 @@ func AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) templ.Component 
 				var templ_7745c5c3_Var28 string
 				templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(e.At)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 176, Col: 48}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 192, Col: 48}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 				if templ_7745c5c3_Err != nil {
@@ -582,7 +582,7 @@ func AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) templ.Component 
 				var templ_7745c5c3_Var29 string
 				templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(e.Action)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 177, Col: 54}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 193, Col: 54}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 				if templ_7745c5c3_Err != nil {
@@ -595,7 +595,7 @@ func AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) templ.Component 
 				var templ_7745c5c3_Var30 string
 				templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinStringErrs(e.From)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 178, Col: 50}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 194, Col: 50}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var30))
 				if templ_7745c5c3_Err != nil {
@@ -608,7 +608,7 @@ func AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) templ.Component 
 				var templ_7745c5c3_Var31 string
 				templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinStringErrs(e.To)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 178, Col: 63}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 194, Col: 63}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var31))
 				if templ_7745c5c3_Err != nil {
@@ -621,7 +621,7 @@ func AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) templ.Component 
 				var templ_7745c5c3_Var32 string
 				templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(e.ActorUserID)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 178, Col: 85}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 194, Col: 85}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var32))
 				if templ_7745c5c3_Err != nil {
@@ -639,7 +639,7 @@ func AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) templ.Component 
 					var templ_7745c5c3_Var33 string
 					templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(e.Note)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 180, Col: 52}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 196, Col: 52}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var33))
 					if templ_7745c5c3_Err != nil {
@@ -682,7 +682,7 @@ func AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) templ.Component 
 				var templ_7745c5c3_Var34 string
 				templ_7745c5c3_Var34, templ_7745c5c3_Err = templ.JoinStringErrs(f.At)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 196, Col: 48}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 212, Col: 48}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var34))
 				if templ_7745c5c3_Err != nil {
@@ -695,7 +695,7 @@ func AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) templ.Component 
 				var templ_7745c5c3_Var35 string
 				templ_7745c5c3_Var35, templ_7745c5c3_Err = templ.JoinStringErrs(f.Event)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 197, Col: 53}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 213, Col: 53}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var35))
 				if templ_7745c5c3_Err != nil {
@@ -708,7 +708,7 @@ func AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) templ.Component 
 				var templ_7745c5c3_Var36 string
 				templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.JoinStringErrs(f.AmountStr)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 197, Col: 73}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 213, Col: 73}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var36))
 				if templ_7745c5c3_Err != nil {
@@ -721,7 +721,7 @@ func AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) templ.Component 
 				var templ_7745c5c3_Var37 string
 				templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.JoinStringErrs(f.RefType)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 198, Col: 53}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 214, Col: 53}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var37))
 				if templ_7745c5c3_Err != nil {
@@ -734,7 +734,7 @@ func AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) templ.Component 
 				var templ_7745c5c3_Var38 string
 				templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinStringErrs(f.RefID)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 198, Col: 69}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 214, Col: 69}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var38))
 				if templ_7745c5c3_Err != nil {
@@ -786,7 +786,7 @@ func actionForm(csrf string, orderID string, action string, label string, isRefu
 		var templ_7745c5c3_Var40 templ.SafeURL
 		templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.JoinURLErrs("/admin/orders/" + orderID + "/" + action)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 209, Col: 71}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 225, Col: 71}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var40))
 		if templ_7745c5c3_Err != nil {
@@ -799,7 +799,7 @@ func actionForm(csrf string, orderID string, action string, label string, isRefu
 		var templ_7745c5c3_Var41 string
 		templ_7745c5c3_Var41, templ_7745c5c3_Err = templ.JoinStringErrs(csrf)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 210, Col: 53}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 226, Col: 53}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var41))
 		if templ_7745c5c3_Err != nil {
@@ -812,7 +812,7 @@ func actionForm(csrf string, orderID string, action string, label string, isRefu
 		var templ_7745c5c3_Var42 string
 		templ_7745c5c3_Var42, templ_7745c5c3_Err = templ.JoinStringErrs(label)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 211, Col: 52}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 227, Col: 52}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var42))
 		if templ_7745c5c3_Err != nil {
@@ -854,7 +854,7 @@ func refundForm(csrf string, orderID string) templ.Component {
 		var templ_7745c5c3_Var44 templ.SafeURL
 		templ_7745c5c3_Var44, templ_7745c5c3_Err = templ.JoinURLErrs("/admin/orders/" + orderID + "/refund")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 222, Col: 68}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 238, Col: 68}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var44))
 		if templ_7745c5c3_Err != nil {
@@ -867,7 +867,7 @@ func refundForm(csrf string, orderID string) templ.Component {
 		var templ_7745c5c3_Var45 string
 		templ_7745c5c3_Var45, templ_7745c5c3_Err = templ.JoinStringErrs(csrf)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 223, Col: 53}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 239, Col: 53}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var45))
 		if templ_7745c5c3_Err != nil {
@@ -909,7 +909,7 @@ func summaryMetric(label, value string) templ.Component {
 		var templ_7745c5c3_Var47 string
 		templ_7745c5c3_Var47, templ_7745c5c3_Err = templ.JoinStringErrs(label)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 240, Col: 67}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 256, Col: 67}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var47))
 		if templ_7745c5c3_Err != nil {
@@ -922,7 +922,7 @@ func summaryMetric(label, value string) templ.Component {
 		var templ_7745c5c3_Var48 string
 		templ_7745c5c3_Var48, templ_7745c5c3_Err = templ.JoinStringErrs(value)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 241, Col: 53}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/admin_order_detail.templ`, Line: 257, Col: 53}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var48))
 		if templ_7745c5c3_Err != nil {

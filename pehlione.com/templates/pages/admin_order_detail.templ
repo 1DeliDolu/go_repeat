@@ -66,7 +66,13 @@ templ AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) {
 						<input type="hidden" name="csrf_token" value={ csrf }/>
 						<h3 class="mb-2 font-semibold text-white">Etiket oluştur</h3>
 						<label class="mb-1 block text-xs text-slate-400">Kargo firması</label>
-						<input class="mb-3 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white placeholder:text-slate-400 focus:border-amber-400 focus:outline-hidden" name="carrier" placeholder="Örn. mock-express"/>
+						<select name="carrier" class="mb-3 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white focus:border-amber-400 focus:outline-hidden">
+							<option value="">-- Seçiniz --</option>
+							<option value="dhl">DHL</option>
+							<option value="hermes">Hermes</option>
+							<option value="dpd">DPD</option>
+							<option value="mock-express">Mock Express (Test)</option>
+						</select>
 						<label class="mb-1 block text-xs text-slate-400">Servis (opsiyonel)</label>
 						<input class="mb-3 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white placeholder:text-slate-400 focus:border-amber-400 focus:outline-hidden" name="service" placeholder="Örn. standard"/>
 						<label class="mb-1 block text-xs text-slate-400">Not (opsiyonel)</label>
@@ -81,7 +87,17 @@ templ AdminOrderDetailBody(csrf string, o view.AdminOrderDetail) {
 						<input type="hidden" name="csrf_token" value={ csrf }/>
 						<h3 class="mb-2 font-semibold text-white">Manuel kargo</h3>
 						<label class="mb-1 block text-xs text-slate-400">Kargo firması</label>
-						<input class="mb-3 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white placeholder:text-slate-400 focus:border-amber-400 focus:outline-hidden" name="carrier" placeholder="Örn. Yurtiçi Kargo"/>
+						<select name="carrier" class="mb-3 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white focus:border-amber-400 focus:outline-hidden">
+							<option value="">-- Seçiniz --</option>
+							<option value="dhl">DHL</option>
+							<option value="hermes">Hermes</option>
+							<option value="dpd">DPD</option>
+							<option value="turkcargo">Türkiye Kargo</option>
+							<option value="aras">Aras Kargo</option>
+							<option value="surat">Sürat Kargo</option>
+							<option value="ups">UPS</option>
+							<option value="fedex">FedEx</option>
+						</select>
 						<label class="mb-1 block text-xs text-slate-400">Takip numarası</label>
 						<input class="mb-3 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white placeholder:text-slate-400 focus:border-amber-400 focus:outline-hidden" name="tracking_no" placeholder="TRK123456"/>
 						<label class="mb-1 block text-xs text-slate-400">Takip linki (opsiyonel)</label>
