@@ -1,3 +1,4 @@
+
 ## 📘 Eğitim: Çok Modüllü Çalışma Alanlarıyla Başlangıç
 
 ## 📑 İçindekiler
@@ -14,8 +15,6 @@ Bu eğitimde, paylaşılan bir *çok modüllü çalışma alanı* içinde iki mo
 
 Not: Diğer eğitimler için bkz. Tutorials.
 
----
-
 ## ✅ Ön koşullar¶
 
 * Go 1.18 veya daha yenisinin yüklü olması.
@@ -23,8 +22,6 @@ Not: Diğer eğitimler için bkz. Tutorials.
 * Bir komut terminali. Go; Linux ve Mac’te herhangi bir terminalde, Windows’ta PowerShell veya cmd üzerinde iyi çalışır.
 
 Bu eğitim *go1.18* veya daha yenisini gerektirir. `go.dev/dl` bağlantılarını kullanarak Go 1.18 veya daha yenisini yüklediğinizden emin olun.
-
----
 
 ## 🧩 Kodunuz için bir modül oluşturun¶
 
@@ -34,24 +31,30 @@ Bir komut istemi açın ve ev dizininize geçin.
 
 Linux veya Mac’te:
 
+---
 ```bash
 $ cd
 ```
+---
 
 Windows’ta:
 
+---
 ```cmd
 C:\> cd %HOMEPATH%
 ```
+---
 
 Eğitimin geri kalanında, istem olarak `$` gösterilecektir. Kullandığınız komutlar Windows’ta da çalışacaktır.
 
 Komut isteminden, kodunuz için `workspace` adlı bir dizin oluşturun.
 
+---
 ```bash
 $ mkdir workspace
 $ cd workspace
 ```
+---
 
 ### Initialize the module
 
@@ -59,21 +62,26 @@ $ cd workspace
 
 `hello` modülünü oluşturun:
 
+---
 ```bash
 $ mkdir hello
 $ cd hello
 $ go mod init example.com/hello
 go: creating new go.mod: module example.com/hello
 ```
+---
 
 `go get` kullanarak `golang.org/x/example/hello/reverse` paketine bir bağımlılık ekleyin.
 
+---
 ```bash
 $ go get golang.org/x/example/hello/reverse
 ```
+---
 
 `hello` dizininde aşağıdaki içerikle `hello.go` oluşturun:
 
+---
 ```go
 package main
 
@@ -87,14 +95,15 @@ func main() {
     fmt.Println(reverse.String("Hello"))
 }
 ```
+---
 
 Şimdi `hello` programını çalıştırın:
 
+---
 ```bash
 $ go run .
 olleH
 ```
-
 ---
 
 ## 🧰 Çalışma alanını oluşturun¶
@@ -105,19 +114,23 @@ Bu adımda, modülü içeren bir çalışma alanını belirtmek için bir `go.wo
 
 `workspace` dizininde şunu çalıştırın:
 
+---
 ```bash
 $ go work init ./hello
 ```
+---
 
 `go work init` komutu, Go’ya `./hello` dizinindeki modülleri içeren bir çalışma alanı için bir `go.work` dosyası oluşturmasını söyler.
 
 Go komutu aşağıdakine benzer bir `go.work` dosyası üretir:
 
+---
 ```go
 go 1.18
 
 use ./hello
 ```
+---
 
 `go.work` dosyası, `go.mod` ile benzer bir söz dizimine sahiptir.
 
@@ -131,16 +144,16 @@ Dolayısıyla `workspace` altındaki herhangi bir alt dizinde modül etkin olaca
 
 `workspace` dizininde şunu çalıştırın:
 
+---
 ```bash
 $ go run ./hello
 olleH
 ```
+---
 
 Go komutu, çalışma alanındaki tüm modülleri ana modüller olarak dahil eder. Bu, modülün dışında olsanız bile modüldeki bir pakete başvurabilmemizi sağlar. Çalışma alanının dışında `go run` komutunu çalıştırmak hata verecektir; çünkü Go komutu hangi modülleri kullanacağını bilemez.
 
 Sonraki adımda, `golang.org/x/example/hello` modülünün yerel bir kopyasını çalışma alanına ekleyeceğiz. Bu modül, `go.googlesource.com/example` Git deposunun bir alt dizininde tutulur. Ardından `reverse` paketine, `String` yerine kullanabileceğimiz yeni bir fonksiyon ekleyeceğiz.
-
----
 
 ## 📥 `golang.org/x/example/hello` modülünü indirip değiştirin¶
 
@@ -150,24 +163,29 @@ Bu adımda, `golang.org/x/example/hello` modülünü içeren Git deposunun bir k
 
 `workspace` dizininden, depoyu klonlamak için `git` komutunu çalıştırın:
 
+---
 ```bash
-$ git clone https://go.googlesource.com/example
+$ git clone https://github.com/1DeliDolu/pehlione_go.git
 Cloning into 'example'...
 remote: Total 165 (delta 27), reused 165 (delta 27)
 Receiving objects: 100% (165/165), 434.18 KiB | 1022.00 KiB/s, done.
 Resolving deltas: 100% (27/27), done.
 ```
+---
 
 ### Modülü çalışma alanına ekleyin
 
 Git deposu az önce `./example` içine alındı. `golang.org/x/example/hello` modülünün kaynak kodu `./example/hello` içindedir. Bunu çalışma alanına ekleyin:
 
+---
 ```bash
 $ go work use ./example/hello
 ```
+---
 
 `go work use` komutu, `go.work` dosyasına yeni bir modül ekler. Artık şu şekilde görünecektir:
 
+---
 ```go
 go 1.18
 
@@ -176,6 +194,7 @@ use (
     ./example/hello
 )
 ```
+---
 
 Çalışma alanı artık hem `example.com/hello` modülünü hem de `golang.org/x/example/hello` modülünü içerir; bu modül de `golang.org/x/example/hello/reverse` paketini sağlar.
 
@@ -187,6 +206,7 @@ Bu, `reverse` paketinin, `go get` komutuyla indirdiğimiz modül önbelleğindek
 
 `workspace/example/hello/reverse` dizininde `int.go` adlı yeni bir dosya oluşturun ve aşağıdaki içeriği ekleyin:
 
+---
 ```go
 package reverse
 
@@ -198,11 +218,13 @@ func Int(i int) int {
     return i
 }
 ```
+---
 
 ### Hello programını fonksiyonu kullanacak şekilde değiştirin
 
 `workspace/hello/hello.go` içeriğini aşağıdaki gibi olacak şekilde değiştirin:
 
+---
 ```go
 package main
 
@@ -216,17 +238,18 @@ func main() {
     fmt.Println(reverse.String("Hello"), reverse.Int(24601))
 }
 ```
-
 ---
 
 ## 🚀 Kodu çalışma alanında çalıştırın¶
 
 `workspace` dizininden şunu çalıştırın:
 
+---
 ```bash
 $ go run ./hello
 olleH 10642
 ```
+---
 
 Go komutu, komut satırında belirtilen `example.com/hello` modülünü, `go.work` dosyasında belirtilen `hello` dizininde bulur; benzer şekilde `golang.org/x/example/hello/reverse` içe aktarımını da `go.work` dosyasını kullanarak çözümler.
 
@@ -234,20 +257,18 @@ Go komutu, komut satırında belirtilen `example.com/hello` modülünü, `go.wor
 
 İki modül aynı çalışma alanında olduğundan, bir modülde değişiklik yapıp diğerinde kullanmak kolaydır.
 
----
-
 ## 🔮 Gelecekteki adım¶
 
 Şimdi, bu modülleri düzgün şekilde yayınlamak için `golang.org/x/example/hello` modülünün bir sürümünü yayınlamamız gerekir; örneğin `v0.1.0`. Bu genellikle modülün sürüm kontrol deposunda bir commit’i etiketleyerek ( *tagging* ) yapılır. Daha fazla ayrıntı için modül sürüm yayınlama iş akışı dokümantasyonuna bakın. Yayınlama yapıldıktan sonra, `hello/go.mod` içindeki `golang.org/x/example/hello` gereksinimini artırabiliriz:
 
+---
 ```bash
 cd hello
 go get golang.org/x/example/hello@v0.1.0
 ```
+---
 
 Böylece Go komutu, modülleri çalışma alanı dışında düzgün şekilde çözümleyebilir.
-
----
 
 ## 📚 Çalışma alanları hakkında daha fazlasını öğrenin¶
 
