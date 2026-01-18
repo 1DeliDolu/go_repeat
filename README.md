@@ -177,12 +177,14 @@ pehlione.com/
 1. **Projeyi klonlayın**
 ---
 ---
+---
 ```bash
 git clone <repo-url>
 cd pehlione.com
 ```
 ---
 2. **Bağımlılıkları yükleyin**
+---
 ---
 ---
 ```bash
@@ -193,12 +195,14 @@ npm install  # Tailwind için
 3. **Environment variables ayarlayın**
 ---
 ---
+---
 ```bash
 # .env dosyası oluşturun
 cp .env.example .env
 ```
 ---
 Gerekli değişkenler:
+---
 ---
 ---
 ```env
@@ -210,6 +214,7 @@ SESSION_TTL_HOURS=168
 4. **Database migration**
 ---
 ---
+---
 ```bash
 goose -dir migrations mysql "user:pass@/pehlione_go" up
 ```
@@ -217,11 +222,13 @@ goose -dir migrations mysql "user:pass@/pehlione_go" up
 5. **Templ generate**
 ---
 ---
+---
 ```bash
 templ generate
 ```
 ---
 6. **Build ve çalıştır**
+---
 ---
 ---
 ```bash
@@ -262,6 +269,7 @@ Database seed migration ile oluşturulur:
 ### Public Routes
 ---
 ---
+---
 ```
 GET  /                    # Ana sayfa
 GET  /products            # Ürün listesi
@@ -279,6 +287,7 @@ POST /logout              # Çıkış (CSRF)
 ### Authenticated Routes
 ---
 ---
+---
 ```
 GET  /account/orders      # Kullanıcı siparişleri
 GET  /orders/:id          # Sipariş detayı
@@ -286,6 +295,7 @@ POST /orders/:id/pay      # Ödeme başlat (CSRF)
 ```
 ---
 ### Admin Routes
+---
 ---
 ---
 ```
@@ -359,7 +369,6 @@ for _, email := range emails {
 }
 ```
 ---
-
 ## 💳 Payment & Refund System
 
 ### Payment Provider Interface
@@ -393,6 +402,7 @@ for _, email := range emails {
 - Email validation (guest için zorunlu)
 
 ### 3. Order Creation (Transaction)
+---
 ---
 ---
 ```
@@ -453,6 +463,7 @@ Benefits:
 ### Type-safe Components
 ---
 ---
+---
 ```go
 // Reusable product card components
 templ StandardProductCard(p ProductCardVM, csrf string) {
@@ -495,6 +506,7 @@ templ ProductsIndexPage(vm ProductsIndexVM) {
 ### Template Generation
 ---
 ---
+---
 ```bash
 # Generate _templ.go files
 templ generate
@@ -508,12 +520,14 @@ templ generate --watch
 ### Structured Logging
 ---
 ---
+---
 ```go
 log.Printf("CartAdd: error adding item: %v", err)
 log.Printf("Checkout error (unhandled): %T - %v", err, err)
 ```
 ---
 ### Request Tracking
+---
 ---
 ---
 ```json
@@ -573,4 +587,4 @@ MIT License - see LICENSE file for details
 
 ## 📞 Contact
 
-Project Link: [https://github.com/1DeliDolu/go_repeat](https://github.com/1DeliDolu/go_repeat)
+Project Link: [https://github.com/1DeliDolu/pehlione_go](https://github.com/1DeliDolu/pehlione_go)
